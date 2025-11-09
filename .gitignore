@@ -96,6 +96,7 @@ Thumbs.db
 .idea/
 
 backend/uploads/
+backend/birds.data.json
 
 .venv/
 venv/
