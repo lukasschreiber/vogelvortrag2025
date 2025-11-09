@@ -6,6 +6,7 @@ import { Button } from "../Button";
 import { Input } from "../Input";
 import { Textarea } from "../Textarea";
 import { ImageUploader } from "../ImageUploader"; // ✅ Reuse our new component
+import { Select } from "../Select";
 
 interface ObservationEditModalProps {
     open: boolean;
@@ -92,6 +93,8 @@ export function ObservationEditModal({
     return (
         <Modal
             open={open}
+            stickyFooter={true}
+            stickyHeader={true}
             onClose={onClose}
             title={editMode === "edit" ? "Edit Observation" : "Add Observation"}
             size="lg"
@@ -107,22 +110,22 @@ export function ObservationEditModal({
         >
             <div className="space-y-4">
                 {/* Species selection */}
-                <div>
-                    <label className="block text-sm font-semibold text-gray-700">Species</label>
-                    <select
-                        name="speciesId"
-                        value={form.speciesId}
-                        onChange={handleChange}
-                        className="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="">Select species...</option>
-                        {speciesList.map((s) => (
-                            <option key={s.id} value={s.id}>
-                                {s.commonName} ({s.scientificName})
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <Select
+                    label="Bird Species"
+                    name="speciesId"
+                    value={form.speciesId}
+                    onChange={handleChange}
+                    options={[
+                        {
+                            value: "",
+                            label: "Select species...",
+                        },
+                        ...speciesList.map((s) => ({
+                            value: s.id,
+                            label: `${s.commonName} (${s.scientificName})`,
+                        })),
+                    ]}
+                />
 
                 {/* Basic info */}
                 <Input label="Title" name="title" value={form.title} onChange={handleChange} />

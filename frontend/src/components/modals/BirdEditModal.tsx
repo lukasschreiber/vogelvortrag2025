@@ -71,6 +71,8 @@ export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "
     return (
         <Modal
             open={open}
+            stickyFooter
+            stickyHeader
             onClose={onClose}
             title={editMode === "edit" ? "Edit Bird" : "Add New Bird"}
             initialFocusRef={confirmRef}

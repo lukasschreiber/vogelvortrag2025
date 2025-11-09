@@ -81,7 +81,7 @@ export function ImageUploader({
     }
 
     return (
-        <div className="pt-2 border-t mt-4">
+        <div className="pt-2 mt-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
 
             <div className="flex flex-wrap gap-3">
@@ -127,7 +127,7 @@ export function ImageUploader({
 
             {/* Expanded editor */}
             {expandedIndex !== null && images[expandedIndex] && (
-                <div className="mt-6 border rounded-lg p-4">
+                <div className="mt-6 bg-gray-100 shadow-md rounded-lg p-4">
                     <div className="flex justify-between items-center mb-2">
                         <h3 className="text-sm font-semibold text-gray-800">Editing Image {expandedIndex + 1}</h3>
                         <button
@@ -157,9 +157,7 @@ export function ImageUploader({
                         />
                     </div>
 
-                    <div className="mt-6 border-t pt-4">
-                        <div className="text-base font-semibold text-gray-800 mb-3">Image Fit & Position</div>
-
+                    <div className="mt-2 pt-4">
                         <div className="flex flex-col md:flex-row gap-6">
                             <div className="relative shrink-0 w-full md:w-80 aspect-square border rounded-xl overflow-hidden bg-gray-100 shadow-inner">
                                 <BirdImageComp image={images[expandedIndex]} hideAttribution imageSize={800} />
@@ -177,7 +175,7 @@ export function ImageUploader({
                                             <span>
                                                 {key === "scale" ? "Zoom" : key === "offsetX" ? "Offset X" : "Offset Y"}
                                             </span>
-                                            <span className="font-mono text-gray-500">
+                                            <span className="text-gray-500">
                                                 {(
                                                     images[expandedIndex].fit?.[key] ?? (key === "scale" ? 1 : 0)
                                                 ).toFixed(2)}
@@ -192,13 +190,7 @@ export function ImageUploader({
                                             onChange={(e) =>
                                                 handleFitChange(expandedIndex, key, parseFloat(e.target.value))
                                             }
-                                            className={`w-full ${
-                                                key === "scale"
-                                                    ? "accent-green-600"
-                                                    : key === "offsetX"
-                                                      ? "accent-blue-600"
-                                                      : "accent-purple-600"
-                                            }`}
+                                            className={`w-full accent-blue-500`}
                                         />
                                     </div>
                                 ))}
