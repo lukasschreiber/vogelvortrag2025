@@ -47,7 +47,6 @@ export function Map() {
     }, [dataSource]);
 
     useEffect(() => {
-        console.log("Map: updating markers based on observations");
         (async () => {
             const newMarkers: Array<{ lat: number; lng: number; image: any; observation: any }> = [];
             for (const observation of observations) {

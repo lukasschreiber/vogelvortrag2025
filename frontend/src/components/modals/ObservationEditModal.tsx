@@ -84,7 +84,6 @@ export function ObservationEditModal({
         }));
     }
 
-    // ✅ Save
     function handleSave() {
         onSave(form);
         onClose();
@@ -96,21 +95,32 @@ export function ObservationEditModal({
             stickyFooter={true}
             stickyHeader={true}
             onClose={onClose}
-            title={editMode === "edit" ? "Edit Observation" : "Add Observation"}
+            title={editMode === "edit" ? "Beobachtung Bearbeiten" : "Neue Beobachtung Hinzufügen"}
             size="lg"
             initialFocusRef={confirmRef}
             footer={
                 <>
                     <Button onClick={onClose} variant="subdue">
-                        Cancel
+                        Abbrechen
                     </Button>
-                    <Button onClick={handleSave}>Save</Button>
+                    <Button
+                        onClick={handleSave}
+                        disabled={
+                            !form.speciesId ||
+                            !form.title ||
+                            !form.location.latitude ||
+                            !form.location.longitude
+                        }
+                    >
+                        Speichern
+                    </Button>
                 </>
             }
         >
             <div className="space-y-4">
                 {/* Species selection */}
                 <Select
+                    required
                     label="Bird Species"
                     name="speciesId"
                     value={form.speciesId}
@@ -118,7 +128,7 @@ export function ObservationEditModal({
                     options={[
                         {
                             value: "",
-                            label: "Select species...",
+                            label: "Art auswählen...",
                         },
                         ...speciesList.map((s) => ({
                             value: s.id,
@@ -128,16 +138,17 @@ export function ObservationEditModal({
                 />
 
                 {/* Basic info */}
-                <Input label="Title" name="title" value={form.title} onChange={handleChange} />
+                <Input label="Titel" required name="title" value={form.title} onChange={handleChange} />
 
-                <Input label="Observer" name="observer" value={form.observer} onChange={handleChange} />
+                <Input label="Beobachter" name="observer" value={form.observer} onChange={handleChange} />
 
-                <Input label="Date" name="date" type="date" value={form.date} onChange={handleChange} />
+                <Input label="Datum (ungefähr)" name="date" type="date" value={form.date} onChange={handleChange} />
 
                 {/* Location */}
                 <div className="grid grid-cols-2 gap-2">
                     <Input
-                        label="Latitude"
+                        required
+                        label="Breitengrad (dezimal)"
                         name="latitude"
                         type="number"
                         step="0.000001"
@@ -145,7 +156,8 @@ export function ObservationEditModal({
                         onChange={(e) => handleLocationChange("latitude", parseFloat(e.target.value))}
                     />
                     <Input
-                        label="Longitude"
+                        required
+                        label="Längengrad (dezimal)"
                         name="longitude"
                         type="number"
                         step="0.000001"
@@ -155,11 +167,11 @@ export function ObservationEditModal({
                 </div>
 
                 {/* Notes */}
-                <Textarea label="Notes" name="notes" rows={4} value={form.notes || ""} onChange={handleChange} />
+                <Textarea label="Notizen" name="notes" rows={4} value={form.notes || ""} onChange={handleChange} />
 
                 {/* ✅ Single image uploader */}
                 <ImageUploader
-                    label="Observation Image"
+                    label="Beobachtungs Bild(er)"
                     images={form.image ? [form.image] : []}
                     onImagesChange={(imgs) => setForm((prev) => ({ ...prev, image: imgs[0] }))}
                     maxImages={1}

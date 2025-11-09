@@ -86,7 +86,7 @@ export function ImageUploader({
 
             <div className="flex flex-wrap gap-3">
                 {images.map((img, i) => (
-                    <div key={i} className="relative w-28 h-28 border rounded-lg overflow-hidden group">
+                    <div key={i} className="relative w-28 h-28 rounded-lg overflow-hidden group">
                         <BirdImageComp
                             image={img}
                             hideAttribution
@@ -102,7 +102,7 @@ export function ImageUploader({
                             <TrashIcon className="w-4 h-4" />
                         </button>
                         <div className="absolute bottom-0 left-0 right-0 bg-black/40 text-white text-xs py-1 text-center opacity-0 group-hover:opacity-100 transition">
-                            Edit
+                            Bearbeiten
                         </div>
                     </div>
                 ))}
@@ -129,27 +129,30 @@ export function ImageUploader({
             {expandedIndex !== null && images[expandedIndex] && (
                 <div className="mt-6 bg-gray-100 shadow-md rounded-lg p-4">
                     <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-sm font-semibold text-gray-800">Editing Image {expandedIndex + 1}</h3>
+                        <h3 className="text-sm font-semibold text-gray-800">Bearbeitungsansicht Bild {expandedIndex + 1}</h3>
                         <button
                             className="text-xs text-gray-500 hover:text-gray-700"
                             onClick={() => setExpandedIndex(null)}
                         >
-                            Close
+                            Schließen
                         </button>
                     </div>
 
                     <div className="space-y-2">
                         <Input
+                            label="Autor"
                             placeholder="Author"
                             value={images[expandedIndex].author || ""}
                             onChange={(e) => handleImageChange(expandedIndex, "author", e.target.value)}
                         />
                         <Input
+                            label="Lizenz"
                             placeholder="License"
                             value={images[expandedIndex].license || ""}
                             onChange={(e) => handleImageChange(expandedIndex, "license", e.target.value)}
                         />
                         <Textarea
+                            label="Beschreibung"
                             placeholder="Description"
                             rows={2}
                             value={images[expandedIndex].description || ""}
@@ -200,7 +203,7 @@ export function ImageUploader({
                                     variant="subdue"
                                     className="self-start mt-2"
                                 >
-                                    Reset Fit
+                                    Bearbeitungen Zurücksetzen
                                 </Button>
                             </div>
                         </div>

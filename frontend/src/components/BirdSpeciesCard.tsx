@@ -134,7 +134,7 @@ export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: 
                         variant="danger"
                         className={isSmall ? "text-xs! px-2! py-1!" : ""}
                     >
-                        Delete
+                        Löschen
                     </Button>
 
                     <Button
@@ -143,7 +143,7 @@ export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: 
                         variant="primary"
                         className={isSmall ? "text-xs! px-2! py-1!" : ""}
                     >
-                        Edit Info
+                        Bearbeiten
                     </Button>
 
                     <Button
@@ -151,7 +151,7 @@ export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: 
                         variant="subdue"
                         className={isSmall ? "text-xs! px-2! py-1!" : ""}
                     >
-                        Images ({species.images.length})
+                        Bilder ({species.images.length})
                     </Button>
 
                     {!hoverSupported && (
@@ -161,7 +161,7 @@ export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: 
                             variant="subdue"
                             className={isSmall ? "text-xs! px-2! py-1!" : ""}
                         >
-                            View
+                            Ansehen
                         </Button>
                     )}
                 </div>

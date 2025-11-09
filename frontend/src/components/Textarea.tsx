@@ -3,12 +3,13 @@ import React from "react";
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
     label?: string;
     readOnly?: boolean;
+    required?: boolean;
 }
 
-export function Textarea({ label, readOnly = false, className = "", ...props }: TextareaProps) {
+export function Textarea({ label, readOnly = false, required, className = "", ...props }: TextareaProps) {
     return (
         <div className="flex flex-col space-y-1.5 w-full">
-            {label && <label className="text-sm font-medium text-gray-700">{label}</label>}
+            {label && <label className="text-sm font-medium text-gray-700">{label}{required && <span className="text-red-500"> *</span>}</label>}
             <textarea
                 {...props}
                 readOnly={readOnly}

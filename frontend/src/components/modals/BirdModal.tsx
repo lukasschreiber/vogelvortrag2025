@@ -96,7 +96,7 @@ export function BirdModal({ species, open, onClose, onUpdate }: BirdPopupProps) 
                                             className="text-xs px-2 py-1"
                                             icon={<PencilIcon className="w-4 h-4" />}
                                         >
-                                            Beobachtung bearbeiten
+                                            Bearbeiten
                                         </Button>
                                         <Button 
                                             onClick={() => {
@@ -111,7 +111,7 @@ export function BirdModal({ species, open, onClose, onUpdate }: BirdPopupProps) 
                                             className="text-xs px-2 py-1"
                                             icon={<TrashIcon className="w-4 h-4" />}
                                         >
-                                            Beobachtung löschen
+                                            Löschen
                                         </Button>
                                         </>
                                     )}

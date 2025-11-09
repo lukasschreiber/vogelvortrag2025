@@ -3,12 +3,13 @@ import React from "react";
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     readOnly?: boolean;
+    required?: boolean;
 }
 
-export function Input({ label, readOnly = false, className = "", ...props }: InputProps) {
+export function Input({ label, readOnly = false, className = "", required, ...props }: InputProps) {
     return (
         <div className="flex flex-col space-y-1.5 w-full">
-            {label && <label className="text-sm font-medium text-gray-700">{label}</label>}
+            {label && <label className="text-sm font-medium text-gray-700">{label}{required && <span className="text-red-500"> *</span>}</label>}
             <input
                 {...props}
                 readOnly={readOnly}

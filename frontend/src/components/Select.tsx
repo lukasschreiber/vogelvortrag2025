@@ -9,12 +9,13 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
     label?: string;
     options: SelectOption[];
     readOnly?: boolean;
+    required?: boolean;
 }
 
-export function Select({ label, options, readOnly = false, className = "", ...props }: SelectProps) {
+export function Select({ label, options, readOnly = false, required, className = "", ...props }: SelectProps) {
     return (
         <div className="flex flex-col space-y-1.5 w-full relative">
-            {label && <label className="text-sm font-medium text-gray-700">{label}</label>}
+            {label && <label className="text-sm font-medium text-gray-700">{label}{required && <span className="text-red-500"> *</span>}</label>}
             <select
                 {...props}
                 disabled={readOnly}

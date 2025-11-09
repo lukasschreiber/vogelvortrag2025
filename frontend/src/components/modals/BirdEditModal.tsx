@@ -5,6 +5,7 @@ import { Select } from "../Select";
 import { Input } from "../Input";
 import { Button } from "../Button";
 import { ImageUploader } from "../ImageUploader";
+import { useBirdData } from "../../contexts/BirdDataContext";
 
 interface BirdModalProps {
     open: boolean;
@@ -15,6 +16,7 @@ interface BirdModalProps {
 }
 
 export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "add" }: BirdModalProps) {
+    const { dataSource } = useBirdData();
     const [form, setForm] = useState<BirdSpecies>({
         id: "",
         commonName: "",
@@ -25,6 +27,11 @@ export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "
     });
 
     const confirmRef = useRef<HTMLButtonElement>(null);
+    const [allSpecies, setAllSpecies] = useState<BirdSpecies[]>([]);
+
+    useEffect(() => {
+        dataSource.getBirdSpecies().then((species) => setAllSpecies(species));
+    }, [dataSource]);
 
     useEffect(() => {
         if (initialData) {
@@ -74,16 +81,16 @@ export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "
             stickyFooter
             stickyHeader
             onClose={onClose}
-            title={editMode === "edit" ? "Edit Bird" : "Add New Bird"}
+            title={editMode === "edit" ? "Art Bearbeiten" : "Neue Art Hinzufügen"}
             initialFocusRef={confirmRef}
             size="lg"
             footer={
                 <>
                     <Button onClick={onClose} variant="subdue">
-                        Cancel
+                        Abbrechen
                     </Button>
-                    <Button variant="primary" onClick={handleSave}>
-                        Save
+                    <Button variant="primary" onClick={handleSave} disabled={!form.commonName || !form.scientificName}>
+                        Speichern
                     </Button>
                 </>
             }
@@ -91,43 +98,58 @@ export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "
             <div className="space-y-3">
                 {/* --- Basic Fields --- */}
                 <Input
+                    required
                     name="id"
-                    label="ID (auto from scientific name)"
+                    label="ID (automatisch aus dem wissenschaftlichen Namen generiert)"
                     readOnly
                     value={form.id}
                     onChange={handleChange}
                 />
-                <Input name="commonName" label="Common Name" value={form.commonName} onChange={handleChange} />
+
+                <Input name="commonName" required label="Deutscher Name" value={form.commonName} onChange={handleChange} />
+                
+                {editMode === "add" &&
+                    allSpecies.some((s) => s.commonName.toLowerCase() === form.commonName.toLowerCase()) && (
+                        <p className="text-sm text-red-500">Eine Art mit dem gleichen Namen existiert bereits.</p>
+                    )}
+
                 <Input
+                    required
                     name="scientificName"
-                    label="Scientific Name"
+                    label="Wissenschaftlicher Name"
                     value={form.scientificName}
                     onChange={handleChange}
                 />
-                <Input name="family" label="Family" value={form.family} onChange={handleChange} />
+
+                {editMode === "add" &&
+                    allSpecies.some((s) => s.scientificName.toLowerCase() === form.scientificName.toLowerCase()) && (
+                        <p className="text-sm text-red-500">Eine Art mit dem gleichen wissenschaftlichen Namen existiert bereits.</p>
+                    )}
+
+                <Input name="family" label="Familie" value={form.family} onChange={handleChange} />
 
                 <Select
                     name="conservationStatus"
-                    label="Conservation Status"
+                    label="Rote Liste Status"
                     value={form.conservationStatus}
                     onChange={handleChange}
                     options={[
-                        { value: "LC", label: "Least Concern" },
-                        { value: "NT", label: "Near Threatened" },
-                        { value: "VU", label: "Vulnerable" },
-                        { value: "EN", label: "Endangered" },
-                        { value: "CR", label: "Critically Endangered" },
-                        { value: "EW", label: "Extinct in the Wild" },
-                        { value: "EX", label: "Extinct" },
+                        { value: "LC", label: "Least Concern (LC)" },
+                        { value: "NT", label: "Near Threatened (NT)" },
+                        { value: "VU", label: "Vulnerable (VU)" },
+                        { value: "EN", label: "Endangered (EN)" },
+                        { value: "CR", label: "Critically Endangered (CR)" },
+                        { value: "EW", label: "Extinct in the Wild (EW)" },
+                        { value: "EX", label: "Extinct (EX)" },
                     ]}
                 />
 
                 {/* --- Images --- */}
                 <ImageUploader
-                    label="Bird Images"
+                    label="Vogel Bild(er)"
                     images={form.images}
                     onImagesChange={(imgs) => setForm((prev) => ({ ...prev, images: imgs }))}
-                    maxImages={10} // configurable
+                    maxImages={10}
                 />
             </div>
         </Modal>
