@@ -7,6 +7,7 @@ import PlusIcon from "./../assets/icons/plus.svg?react";
 import { Input } from "./Input";
 import { Textarea } from "./Textarea";
 import { Button } from "./Button";
+import { useBirdData } from "../contexts/BirdDataContext";
 
 interface ImageUploaderProps {
     images: BirdImage[];
@@ -24,6 +25,7 @@ export function ImageUploader({
     label = "Images",
 }: ImageUploaderProps) {
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+    const { editKey } = useBirdData();
 
     async function handleAddImage(file: File) {
         const formData = new FormData();
@@ -31,6 +33,9 @@ export function ImageUploader({
 
         const res = await fetch(uploadUrl, {
             method: "POST",
+            headers: {
+                ...(editKey ? { "x-edit-key": editKey } : {}),
+            },
             body: formData,
         });
 
