@@ -86,7 +86,7 @@ export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: 
                 >
                     <div
                         className={`absolute z-10 left-2 top-2 font-semibold text-white/80 drop-shadow-md
-              text-lg @md:text-2xl @lg:text-4xl transition-all duration-300 ${isSmall ? "text-md" : ""}`}
+                        text-4xl transition-all duration-300`}
                     >
                         {species.commonName}
                     </div>
