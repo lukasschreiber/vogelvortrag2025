@@ -3,15 +3,19 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import svgr from "vite-plugin-svgr";
 
-// https://vite.dev/config/
 export default ({ mode }: any) => {
-    const env = loadEnv(mode, "../", "");
+    // Only load env manually in development
+    const isDev = mode === "development";
+    const env = isDev ? loadEnv(mode, "../", "") : process.env;
 
     return defineConfig({
         plugins: [react(), tailwindcss(), svgr()],
         define: {
-            "import.meta.env.VITE_BACKEND_URL": JSON.stringify(env.BACKEND_URL),
-            "import.meta.env.VITE_EDIT_LINK_KEY": JSON.stringify(env.EDIT_LINK_KEY),
+            // Use env vars differently depending on mode
+            "import.meta.env.VITE_BACKEND_URL": JSON.stringify(isDev ? env.BACKEND_URL : process.env.VITE_BACKEND_URL),
+            "import.meta.env.VITE_EDIT_LINK_KEY": JSON.stringify(
+                isDev ? env.EDIT_LINK_KEY : process.env.VITE_EDIT_LINK_KEY
+            ),
         },
     });
 };
