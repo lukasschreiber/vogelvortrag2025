@@ -95,6 +95,11 @@ Thumbs.db
 .vscode/
 .idea/
 
+backend/uploads/
+
+.venv/
+venv/
+
 # =========================
 # End of .gitignore
 # =========================
