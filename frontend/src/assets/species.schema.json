@@ -1,0 +1,43 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/schemas/species.json",
+    "title": "Bird Species Collection",
+    "type": "object",
+    "properties": {
+        "species": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "title": "BirdSpecies",
+                "properties": {
+                    "id": { "type": "string" },
+                    "commonName": { "type": "string" },
+                    "scientificName": { "type": "string" },
+                    "family": { "type": "string" },
+                    "conservationStatus": {
+                        "type": "string",
+                        "enum": ["LC", "NT", "VU", "EN", "CR", "EW", "EX"]
+                    },
+                    "images": {
+                        "type": "array",
+                        "items": { "$ref": "#/$defs/BirdImage" }
+                    }
+                },
+                "required": ["id", "commonName", "scientificName", "family", "images"]
+            }
+        }
+    },
+    "required": ["species"],
+    "$defs": {
+        "BirdImage": {
+            "type": "object",
+            "properties": {
+                "url": { "type": "string", "format": "uri" },
+                "author": { "type": "string" },
+                "license": { "type": "string" },
+                "description": { "type": "string" }
+            },
+            "required": ["url"]
+        }
+    }
+}

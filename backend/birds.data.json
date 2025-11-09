@@ -1,0 +1,112 @@
+{
+  "species": [
+    {
+      "id": "passer-domesticus",
+      "commonName": "Haussperling",
+      "scientificName": "Passer domesticus",
+      "family": "Passeridae",
+      "conservationStatus": "LC",
+      "images": [
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/House_sparrow_male_in_Prospect_Park_%2853532%29.jpg/1280px-House_sparrow_male_in_Prospect_Park_%2853532%29.jpg",
+          "author": "Lukas Schreiber",
+          "license": null,
+          "description": "A house sparrow perched on a branch.",
+          "fit": {
+            "scale": 1.0,
+            "offsetX": 0.0,
+            "offsetY": 0.0
+          }
+        },
+        {
+          "url": "/uploads/054875b194924837b6a056a614a9baa1.jpg",
+          "author": null,
+          "license": null,
+          "description": "Uploaded IMG_2235.jpg",
+          "fit": null
+        }
+      ]
+    },
+    {
+      "id": "erithacus-rubecula",
+      "commonName": "Rotkehlchen",
+      "scientificName": "Erithacus rubecula",
+      "family": "Muscicapidae",
+      "conservationStatus": "LC",
+      "images": [
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Robin_%289509442456%29.jpg/1280px-Robin_%289509442456%29.jpg",
+          "author": null,
+          "license": null,
+          "description": "A European robin with its head cocked.",
+          "fit": {
+            "scale": 1.0,
+            "offsetX": 0.0,
+            "offsetY": 0.0
+          }
+        },
+        {
+          "url": "/uploads/e68402c2cd3a4ca6919f32b9d0c00e6f.jpg",
+          "author": null,
+          "license": null,
+          "description": "Uploaded IMG_6424.jpg",
+          "fit": null
+        }
+      ]
+    },
+    {
+      "id": "cyanistes-caeruleus",
+      "commonName": "Neuntöter",
+      "scientificName": "Cyanistes caeruleus",
+      "family": "Paridae",
+      "conservationStatus": "LC",
+      "images": [
+        {
+          "url": "/uploads/4f73ac21c8504731a93f52955ec967c2.JPEG",
+          "author": null,
+          "license": null,
+          "description": "Uploaded IMG_7776.JPEG",
+          "fit": {
+            "scale": 1.83,
+            "offsetX": 0.05,
+            "offsetY": 0.05
+          }
+        }
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "id": "d134368f-7534-4d8c-8e61-e6299358b872",
+      "speciesId": "passer-domesticus",
+      "date": "2025-11-08",
+      "location": {
+        "latitude": 49.87050939224155,
+        "longitude": 8.652452230453493
+      },
+      "observer": "Lukas",
+      "title": "Test 2",
+      "notes": "",
+      "image": {
+        "url": "/uploads/e001e80586be4a1d8d55209b9691bffa.png",
+        "author": null,
+        "license": null,
+        "description": "Uploaded ChatGPT Image Oct 12, 2025, 12_29_38 PM.png",
+        "fit": null
+      }
+    },
+    {
+      "id": "471317ea-e561-4165-a221-cfd5e90a199e",
+      "speciesId": "passer-domesticus",
+      "date": "2025-11-08",
+      "location": {
+        "latitude": 49.868035205746665,
+        "longitude": 8.65229666233063
+      },
+      "observer": "",
+      "title": "fhgfjhgk",
+      "notes": "",
+      "image": null
+    }
+  ]
+}

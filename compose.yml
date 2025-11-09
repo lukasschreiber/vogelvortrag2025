@@ -1,0 +1,22 @@
+
+services:
+  backend:
+    build: ./backend
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/birds.data.json:/app/birds.data.json
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_BACKEND_URL: ${BACKEND_URL}
+        VITE_EDIT_LINK_KEY: ${EDIT_LINK_KEY}
+    env_file: .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend

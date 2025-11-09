@@ -1,0 +1,46 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://example.com/schemas/observations.json",
+    "title": "Bird Observations Collection",
+    "type": "object",
+    "properties": {
+        "observations": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "title": "BirdObservation",
+                "properties": {
+                    "id": { "type": "string" },
+                    "speciesId": { "type": "string" },
+                    "date": { "type": "string", "format": "date-time" },
+                    "location": {
+                        "type": "object",
+                        "properties": {
+                            "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+                            "longitude": { "type": "number", "minimum": -180, "maximum": 180 }
+                        },
+                        "required": ["latitude", "longitude"]
+                    },
+                    "observer": { "type": "string" },
+                    "notes": { "type": "string" },
+                    "title": { "type": "string" },
+                    "image": { "$ref": "#/$defs/BirdImage" }
+                },
+                "required": ["id", "speciesId", "date", "location", "observer", "title"]
+            }
+        }
+    },
+    "required": ["observations"],
+    "$defs": {
+        "BirdImage": {
+            "type": "object",
+            "properties": {
+                "url": { "type": "string", "format": "uri" },
+                "author": { "type": "string" },
+                "license": { "type": "string" },
+                "description": { "type": "string" }
+            },
+            "required": ["url"]
+        }
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "$schema": "./species.schema.json",
+    "species": [
+        {
+            "id": "spatz",
+            "commonName": "Haussperling",
+            "scientificName": "Passer domesticus",
+            "family": "Passeridae",
+            "conservationStatus": "LC",
+            "images": [
+                {
+                    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/House_sparrow_male_in_Prospect_Park_%2853532%29.jpg/1280px-House_sparrow_male_in_Prospect_Park_%2853532%29.jpg",
+                    "description": "A house sparrow perched on a branch."
+                }
+            ]
+        },
+        {
+            "id": "rotkehlchen",
+            "commonName": "Rotkehlchen",
+            "scientificName": "Erithacus rubecula",
+            "family": "Muscicapidae",
+            "conservationStatus": "LC",
+            "images": [
+                {
+                    "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Robin_%289509442456%29.jpg/1280px-Robin_%289509442456%29.jpg",
+                    "description": "A European robin with its head cocked."
+                }
+            ]
+        },
+        {
+            "id": "blaumeise",
+            "commonName": "Blaumeise",
+            "scientificName": "Cyanistes caeruleus",
+            "family": "Paridae",
+            "conservationStatus": "LC",
+            "images": []
+        }
+    ]
+}

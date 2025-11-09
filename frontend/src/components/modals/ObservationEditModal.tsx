@@ -1,0 +1,167 @@
+import React, { useEffect, useRef, useState } from "react";
+import type { BirdObservation, BirdSpecies } from "../../data/types";
+import { Modal } from "../Modal";
+import { useBirdData } from "../../contexts/BirdDataContext";
+import { Button } from "../Button";
+import { Input } from "../Input";
+import { Textarea } from "../Textarea";
+import { ImageUploader } from "../ImageUploader"; // ✅ Reuse our new component
+
+interface ObservationEditModalProps {
+    open: boolean;
+    onClose: () => void;
+    initialData?: Partial<BirdObservation>;
+    onSave: (obs: BirdObservation) => void;
+    editMode?: "add" | "edit";
+}
+
+export function ObservationEditModal({
+    open,
+    onClose,
+    initialData,
+    onSave,
+    editMode = "add",
+}: ObservationEditModalProps) {
+    const { dataSource } = useBirdData();
+    const [speciesList, setSpeciesList] = useState<BirdSpecies[]>([]);
+    const confirmRef = useRef<HTMLButtonElement>(null);
+
+    const [form, setForm] = useState<BirdObservation>({
+        id: "",
+        speciesId: "",
+        date: new Date().toISOString().split("T")[0],
+        location: { latitude: 0, longitude: 0 },
+        observer: "",
+        title: "",
+        notes: "",
+    });
+
+    // ✅ Fetch bird species
+    useEffect(() => {
+        (async () => {
+            const species = await dataSource.getBirdSpecies();
+            setSpeciesList(species);
+        })();
+    }, [dataSource]);
+
+    // ✅ Initialize form data
+    useEffect(() => {
+        if (initialData) {
+            setForm({
+                id: editMode === "add" ? crypto.randomUUID() : initialData.id || "",
+                speciesId: initialData.speciesId || "",
+                date: initialData.date || new Date().toISOString().split("T")[0],
+                location: initialData.location || { latitude: 0, longitude: 0 },
+                observer: initialData.observer || "",
+                title: initialData.title || "",
+                notes: initialData.notes || "",
+                image: initialData.image,
+            });
+        } else {
+            setForm({
+                id: crypto.randomUUID(),
+                speciesId: "",
+                date: new Date().toISOString().split("T")[0],
+                location: { latitude: 0, longitude: 0 },
+                observer: "",
+                title: "",
+                notes: "",
+            });
+        }
+    }, [initialData, open, editMode]);
+
+    // ✅ Field change handlers
+    function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+    }
+
+    function handleLocationChange(field: "latitude" | "longitude", value: number) {
+        setForm((prev) => ({
+            ...prev,
+            location: { ...prev.location, [field]: value },
+        }));
+    }
+
+    // ✅ Save
+    function handleSave() {
+        onSave(form);
+        onClose();
+    }
+
+    return (
+        <Modal
+            open={open}
+            onClose={onClose}
+            title={editMode === "edit" ? "Edit Observation" : "Add Observation"}
+            size="lg"
+            initialFocusRef={confirmRef}
+            footer={
+                <>
+                    <Button onClick={onClose} variant="subdue">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleSave}>Save</Button>
+                </>
+            }
+        >
+            <div className="space-y-4">
+                {/* Species selection */}
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700">Species</label>
+                    <select
+                        name="speciesId"
+                        value={form.speciesId}
+                        onChange={handleChange}
+                        className="mt-1 w-full rounded-lg border px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="">Select species...</option>
+                        {speciesList.map((s) => (
+                            <option key={s.id} value={s.id}>
+                                {s.commonName} ({s.scientificName})
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Basic info */}
+                <Input label="Title" name="title" value={form.title} onChange={handleChange} />
+
+                <Input label="Observer" name="observer" value={form.observer} onChange={handleChange} />
+
+                <Input label="Date" name="date" type="date" value={form.date} onChange={handleChange} />
+
+                {/* Location */}
+                <div className="grid grid-cols-2 gap-2">
+                    <Input
+                        label="Latitude"
+                        name="latitude"
+                        type="number"
+                        step="0.000001"
+                        value={form.location.latitude}
+                        onChange={(e) => handleLocationChange("latitude", parseFloat(e.target.value))}
+                    />
+                    <Input
+                        label="Longitude"
+                        name="longitude"
+                        type="number"
+                        step="0.000001"
+                        value={form.location.longitude}
+                        onChange={(e) => handleLocationChange("longitude", parseFloat(e.target.value))}
+                    />
+                </div>
+
+                {/* Notes */}
+                <Textarea label="Notes" name="notes" rows={4} value={form.notes || ""} onChange={handleChange} />
+
+                {/* ✅ Single image uploader */}
+                <ImageUploader
+                    label="Observation Image"
+                    images={form.image ? [form.image] : []}
+                    onImagesChange={(imgs) => setForm((prev) => ({ ...prev, image: imgs[0] }))}
+                    maxImages={1}
+                />
+            </div>
+        </Modal>
+    );
+}
