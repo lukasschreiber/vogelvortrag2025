@@ -7,7 +7,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/uploads:/app/uploads
-      - ./backend/birds.data.json:/app/birds.data.json
+      - ./backend/data:/app/data
 
   frontend:
     build:

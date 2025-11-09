@@ -40,6 +40,7 @@ if os.getenv("ENV", "development") == "development":
 app = FastAPI(title="Vogelvortrag API", version="1.0.0")
 
 UPLOAD_DIR = Path("uploads")
+DATA_DIR = Path("data")
 CACHE_DIR = UPLOAD_DIR / "_cache"
 EDIT_LINK_KEY = os.getenv("EDIT_LINK_KEY") or "default_edit_key"
 print(f"🔑 Using EDIT_LINK_KEY: {EDIT_LINK_KEY}")
@@ -55,7 +56,9 @@ app.add_middleware(
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-repo = JsonRepository(Path("./birds.data.json"))
+# merge with the data directory 
+data_file = DATA_DIR / "birds.data.json"
+repo = JsonRepository(data_file)
 
 @app.middleware("http")
 async def verify_edit_key(request: Request, call_next):
