@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, type DragEvent } from "react";
 import type { BirdImage } from "./../data/types";
 import { BirdImage as BirdImageComp } from "./BirdImage";
 import TrashIcon from "../assets/icons/trash.svg?react";
-
 import PlusIcon from "./../assets/icons/plus.svg?react";
 import { Input } from "./Input";
 import { Textarea } from "./Textarea";
@@ -12,8 +11,8 @@ import { useBirdData } from "../contexts/BirdDataContext";
 interface ImageUploaderProps {
     images: BirdImage[];
     onImagesChange: (images: BirdImage[]) => void;
-    maxImages?: number; // optional, default: Infinity
-    uploadUrl?: string; // optional, default: http://localhost:8000/upload-image
+    maxImages?: number;
+    uploadUrl?: string;
     label?: string;
 }
 
@@ -25,6 +24,7 @@ export function ImageUploader({
     label = "Images",
 }: ImageUploaderProps) {
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
     const { editKey } = useBirdData();
 
     async function handleAddImage(file: File) {
@@ -67,7 +67,7 @@ export function ImageUploader({
         if (key === "reset") {
             updated[index].fit = { scale: 1, offsetX: 0, offsetY: 0 };
         } else {
-            let newFit = { ...fit, [key]: value ?? fit[key] };
+            const newFit = { ...fit, [key]: value ?? fit[key] };
             newFit.scale = Math.max(0.5, Math.min(2, newFit.scale));
 
             const maxOffset = (newFit.scale - 1) / newFit.scale;
@@ -78,6 +78,29 @@ export function ImageUploader({
         }
 
         onImagesChange(updated);
+    }
+
+    // ---- Drag & Drop Handlers ----
+    function handleDragOver(e: DragEvent<HTMLLabelElement>) {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    }
+
+    function handleDragLeave(e: DragEvent<HTMLLabelElement>) {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    }
+
+    function handleDrop(e: DragEvent<HTMLLabelElement>) {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const files = Array.from(e.dataTransfer.files).filter((file) => file.type.startsWith("image/"));
+
+        files.forEach((file) => handleAddImage(file));
     }
 
     return (
@@ -108,7 +131,13 @@ export function ImageUploader({
                 ))}
 
                 {images.length < maxImages && (
-                    <label className="flex w-28 h-28 items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-gray-400 hover:text-gray-600">
+                    <label
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`flex w-28 h-28 items-center justify-center border-2 border-dashed rounded-lg cursor-pointer text-gray-400 hover:text-gray-600 transition
+                            ${isDragging ? "border-blue-400 bg-blue-50 text-blue-600" : "border-gray-300"}`}
+                    >
                         <PlusIcon className="w-4 h-4" />
                         <input
                             type="file"
@@ -129,7 +158,9 @@ export function ImageUploader({
             {expandedIndex !== null && images[expandedIndex] && (
                 <div className="mt-6 bg-gray-100 shadow-md rounded-lg p-4">
                     <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-sm font-semibold text-gray-800">Bearbeitungsansicht Bild {expandedIndex + 1}</h3>
+                        <h3 className="text-sm font-semibold text-gray-800">
+                            Bearbeitungsansicht Bild {expandedIndex + 1}
+                        </h3>
                         <button
                             className="text-xs text-gray-500 hover:text-gray-700"
                             onClick={() => setExpandedIndex(null)}
@@ -193,7 +224,7 @@ export function ImageUploader({
                                             onChange={(e) =>
                                                 handleFitChange(expandedIndex, key, parseFloat(e.target.value))
                                             }
-                                            className={`w-full accent-blue-500`}
+                                            className="w-full accent-blue-500"
                                         />
                                     </div>
                                 ))}
