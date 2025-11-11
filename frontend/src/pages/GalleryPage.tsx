@@ -22,7 +22,9 @@ export function GalleryPage() {
     const location = useLocation();
 
     useEffect(() => {
-        dataSource.getBirdSpecies().then(setSpecies);
+        dataSource.getBirdSpecies().then(species => {
+            setSpecies(species.sort((a, b) => a.commonName.localeCompare(b.commonName)));
+        });
     }, [dataSource]);
 
     return (
