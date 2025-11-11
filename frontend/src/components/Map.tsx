@@ -55,7 +55,6 @@ export function Map() {
                     const species = await dataSource.getBirdSpeciesById(observation.speciesId);
                     image = species?.images[0];
                 }
-                if (!image) continue;
                 newMarkers.push({
                     lat: observation.location.latitude,
                     lng: observation.location.longitude,
@@ -65,7 +64,7 @@ export function Map() {
             }
             setMarkers(newMarkers);
         })();
-    }, [observations]);
+    }, [observations, dataSource]);
 
     useEffect(() => {
         const minZoom = 5;
@@ -136,7 +135,11 @@ export function Map() {
 
                 <QRCodeButton />
 
-                <Button onClick={() => navigate(`/${location.search}`)} variant="subdue" className="mb-2 rounded-xl w-10 h-10">
+                <Button
+                    onClick={() => navigate(`/${location.search}`)}
+                    variant="subdue"
+                    className="mb-2 rounded-xl w-10 h-10"
+                >
                     <GridIcon className="w-6 h-6" />
                 </Button>
 

@@ -105,12 +105,7 @@ export function ObservationEditModal({
                     </Button>
                     <Button
                         onClick={handleSave}
-                        disabled={
-                            !form.speciesId ||
-                            !form.title ||
-                            !form.location.latitude ||
-                            !form.location.longitude
-                        }
+                        disabled={!form.speciesId || !form.title || !form.location.latitude || !form.location.longitude}
                     >
                         Speichern
                     </Button>
@@ -130,10 +125,12 @@ export function ObservationEditModal({
                             value: "",
                             label: "Art auswählen...",
                         },
-                        ...speciesList.map((s) => ({
-                            value: s.id,
-                            label: `${s.commonName} (${s.scientificName})`,
-                        })),
+                        ...speciesList
+                            .sort((a, b) => a.commonName.localeCompare(b.commonName))
+                            .map((s) => ({
+                                value: s.id,
+                                label: `${s.commonName} (${s.scientificName})`,
+                            })),
                     ]}
                 />
 

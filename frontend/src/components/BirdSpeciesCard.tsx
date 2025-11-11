@@ -99,7 +99,10 @@ export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: 
                     />
                 </div>
             ) : (
-                <div className="w-full h-full bg-[#b0afa4] flex items-center justify-center aspect-square">
+                <div
+                    className="w-full h-full bg-[#b0afa4] flex items-center justify-center aspect-square"
+                    onClick={() => canOpenModal && setPopupOpen(true)}
+                >
                     <span
                         className={`text-white/70 font-semibold transition-all duration-300 ${
                             isSmall ? "text-base" : "text-2xl"

@@ -5,7 +5,7 @@ import { BirdImage as BirdImageComp } from "./BirdImage";
 
 interface BirdIconOptions {
     size?: number; // Diameter of the circular image, e.g. 64
-    image: BirdImage;
+    image?: BirdImage;
     borderColor?: string;
     className?: string;
 }
@@ -15,6 +15,18 @@ export function createBirdIcon({ size = 64, image, className, borderColor = "whi
     const pointerWidth = Math.round(size * 0.15);
     const pointerHeight = Math.round(size * 0.2);
     const translateY = -(size / 32);
+
+    // fallback background (if no image)
+    const fallback = (
+        <div
+            className="flex items-center justify-center w-full h-full bg-gray-200 text-gray-600 text-xs font-semibold select-none"
+            style={{
+                fontSize: `${size * 0.25}px`,
+            }}
+        >
+            ?
+        </div>
+    );
 
     return L.divIcon({
         html: renderToString(
@@ -27,7 +39,11 @@ export function createBirdIcon({ size = 64, image, className, borderColor = "whi
                         border: `${Math.round(size * 0.06)}px solid ${borderColor}`,
                     }}
                 >
-                    <BirdImageComp image={image} className="w-full h-full" imageSize={400} hideAttribution />
+                    {image ? (
+                        <BirdImageComp image={image} className="w-full h-full" imageSize={400} hideAttribution />
+                    ) : (
+                        fallback
+                    )}
                 </div>
                 <div
                     className="w-0 h-0"
