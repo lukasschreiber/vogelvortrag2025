@@ -23,18 +23,18 @@ export function GalleryPage() {
 
     useEffect(() => {
         dataSource.getBirdSpecies().then(species => {
-            setSpecies(species.sort((a, b) => a.commonName.localeCompare(b.commonName)));
+            setSpecies(species);
         });
     }, [dataSource]);
 
     return (
         <div className="relative min-h-screen bg-[#e3e2d4]">
             <BirdGallery
-                species={species}
+                species={species.sort((a, b) => a.commonName.localeCompare(b.commonName))}
                 imagesPerRow={imagesPerRow}
                 onUpdate={async () => {
                     console.log("GalleryPage: refreshing species list after update");
-                    const newSpecies = await dataSource.getBirdSpecies(true);
+                    const newSpecies = await dataSource.getBirdSpecies();
                     setSpecies(newSpecies);
                 }}
             />
@@ -84,7 +84,7 @@ export function GalleryPage() {
                     setIsModalOpen(false);
                     // TODO: integrate with your data source or context save logic
                     await dataSource.saveBirdSpecies(updated);
-                    const newSpecies = await dataSource.getBirdSpecies(true);
+                    const newSpecies = await dataSource.getBirdSpecies();
                     setSpecies(newSpecies);
                 }}
             />

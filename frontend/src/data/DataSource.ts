@@ -8,25 +8,29 @@ export abstract class DataSource {
     protected abstract fetchBirdSpecies(): Promise<BirdSpecies[]>;
     protected abstract fetchBirdObservations(): Promise<BirdObservation[]>;
 
+    async invalidateSpeciesCache(): Promise<void> {
+        this.speciesCache = null;
+    }
+
+    async invalidateObservationsCache(): Promise<void> {
+        this.observationsCache = null;
+    }
+
     // Cached getter for species
-    async getBirdSpecies(force?: boolean): Promise<BirdSpecies[]> {
-        if (force) {
-            this.speciesCache = null;
+    async getBirdSpecies(): Promise<BirdSpecies[]> {
+        if (this.speciesCache) {
+            return this.speciesCache;
         }
-        if (!this.speciesCache) {
-            this.speciesCache = await this.fetchBirdSpecies();
-        }
+        this.speciesCache = await this.fetchBirdSpecies();
         return this.speciesCache;
     }
 
     // Cached getter for observations
-    async getBirdObservations(force?: boolean): Promise<BirdObservation[]> {
-        if (force) {
-            this.observationsCache = null;
+    async getBirdObservations(): Promise<BirdObservation[]> {
+        if (this.observationsCache) {
+            return this.observationsCache;
         }
-        if (!this.observationsCache) {
-            this.observationsCache = await this.fetchBirdObservations();
-        }
+        this.observationsCache = await this.fetchBirdObservations();
         return this.observationsCache;
     }
 

@@ -51,42 +51,6 @@ export class PythonDataSource extends DataSource {
         return this.unwrapRoot<BirdObservation>(data);
     }
 
-    // --- Additional convenience methods ---
-
-    async getBirdSpeciesById(id: string): Promise<BirdSpecies | null> {
-        try {
-            return await this.fetchJson<BirdSpecies>(`/species/${encodeURIComponent(id)}`);
-        } catch (err: any) {
-            if (err.message.includes("404")) return null;
-            throw err;
-        }
-    }
-
-    async getBirdObservationsBySpeciesId(speciesId: string): Promise<BirdObservation[]> {
-        const data = await this.fetchJson<any>(`/observations?speciesId=${encodeURIComponent(speciesId)}`);
-        return this.unwrapRoot<BirdObservation>(data);
-    }
-
-    async speciesHasObservations(speciesId: string): Promise<boolean> {
-        try {
-            const data = await this.fetchJson<any>(`/species/${encodeURIComponent(speciesId)}/has-observations`);
-            return Boolean(data);
-        } catch (err: any) {
-            if (err.message.includes("404")) return false;
-            throw err;
-        }
-    }
-
-    async getSpeciesCount(): Promise<number> {
-        const { count } = await this.fetchJson<{ count: number }>("/species/count");
-        return count;
-    }
-
-    async getObservationCount(): Promise<number> {
-        const { count } = await this.fetchJson<{ count: number }>("/observations/count");
-        return count;
-    }
-
     async saveBirdSpecies(species: BirdSpecies): Promise<void> {
         await this.fetchJson<void>(
             "/species",
@@ -97,6 +61,7 @@ export class PythonDataSource extends DataSource {
             },
             false
         );
+        await this.invalidateSpeciesCache();
     }
 
     async saveBirdObservation(observation: BirdObservation): Promise<void> {
@@ -109,6 +74,7 @@ export class PythonDataSource extends DataSource {
             },
             false
         );
+        await this.invalidateObservationsCache();
     }
 
     async deleteBirdSpecies(speciesId: string): Promise<void> {
@@ -119,6 +85,7 @@ export class PythonDataSource extends DataSource {
             },
             false
         );
+        await this.invalidateSpeciesCache();
     }
 
     async deleteBirdObservation(observationId: string): Promise<void> {
@@ -129,6 +96,7 @@ export class PythonDataSource extends DataSource {
             },
             false
         );
+        await this.invalidateObservationsCache();
     }
 
     unwrapRoot<T>(data: any): T[] {

@@ -2,15 +2,23 @@ import L from "leaflet";
 import { renderToString } from "react-dom/server";
 import type { BirdImage } from "../data/types";
 import { BirdImage as BirdImageComp } from "./BirdImage";
+import CheckIcon from "../assets/icons/check.svg?react";
 
 interface BirdIconOptions {
     size?: number; // Diameter of the circular image, e.g. 64
     image?: BirdImage;
     borderColor?: string;
     className?: string;
+    visited?: boolean;
 }
 
-export function createBirdIcon({ size = 64, image, className, borderColor = "white" }: BirdIconOptions): L.DivIcon {
+export function createBirdIcon({
+    size = 64,
+    image,
+    className,
+    visited,
+    borderColor = "white",
+}: BirdIconOptions): L.DivIcon {
     // Pointer triangle dimensions relative to size
     const pointerWidth = Math.round(size * 0.15);
     const pointerHeight = Math.round(size * 0.2);
@@ -31,6 +39,11 @@ export function createBirdIcon({ size = 64, image, className, borderColor = "whi
     return L.divIcon({
         html: renderToString(
             <div className={`relative flex flex-col items-center ${className || ""}`}>
+                {visited && (
+                    <div className="absolute top-1 right-1 bg-green-500 rounded-full w-8 h-8 flex items-center justify-center shadow-md z-1000 text-white">
+                        <CheckIcon className="w-5 h-5" />
+                    </div>
+                )}
                 <div
                     className="relative rounded-full overflow-hidden shadow-md"
                     style={{

@@ -13,9 +13,11 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import { useLocation, useNavigate } from "react-router";
 import type { BirdObservation } from "../data/types";
 import { QRCodeButton } from "./QRCodeButton";
+import RefreshIcon from "../assets/icons/refresh.svg?react";
 
 export function Map() {
     const { dataSource, isEditingAllowed, stopEditing } = useBirdData();
+    const [visitedMarkers, setVisitedMarkers] = useLocalStorage<Set<string>>("vogelvortrag-visited-markers", new Set());
     const [observations, setObservations] = useState<BirdObservation[]>([]);
     const navigate = useNavigate();
     const location = useLocation();
@@ -104,7 +106,8 @@ export function Map() {
                 const customIcon = createBirdIcon({
                     size: 128, // always fixed
                     image: marker.image,
-                    className: "bird-icon", // <-- ensure this class gets applied
+                    className: "bird-icon",
+                    visited: visitedMarkers.has(marker.observation.id),
                 });
                 return (
                     <Marker
@@ -114,6 +117,11 @@ export function Map() {
                         eventHandlers={{
                             click: () => {
                                 setPopupOpenSpeciesId(marker.observation.speciesId);
+                                setVisitedMarkers((prev) => {
+                                    const newSet = new Set(prev);
+                                    newSet.add(marker.observation.id);
+                                    return newSet;
+                                });
                             },
                         }}
                     />
@@ -132,6 +140,16 @@ export function Map() {
                         <XMarkIcon className="w-6 h-6" />
                     </Button>
                 )}
+
+                <Button
+                    onClick={async () => {
+                        confirm(`Möchtest du wirklich alle "Bereits Besucht" Marker zurücksetzen?`) && setVisitedMarkers(new Set());
+                    }}
+                    variant="subdue"
+                    className="mb-2 rounded-xl w-10 h-10"
+                >
+                    <RefreshIcon className="w-6 h-6" />
+                </Button>
 
                 <QRCodeButton />
 
@@ -162,7 +180,7 @@ export function Map() {
                     }}
                     onSave={async (obs) => {
                         await dataSource.saveBirdObservation(obs);
-                        dataSource.getBirdObservations(true).then(async (observations) => {
+                        dataSource.getBirdObservations().then(async (observations) => {
                             setObservations(observations);
                         });
                         setShowObsModal(false);
@@ -179,7 +197,7 @@ export function Map() {
                         setPopupSpecies(null);
                     }}
                     onUpdate={async () => {
-                        dataSource.getBirdObservations(true).then(async (observations) => {
+                        dataSource.getBirdObservations().then(async (observations) => {
                             setObservations(observations);
                         });
                     }}
