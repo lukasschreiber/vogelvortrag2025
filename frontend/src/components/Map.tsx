@@ -1,6 +1,6 @@
-import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { createBirdIcon } from "./BirdMapIcon";
+import { BirdMarkerIcon } from "./BirdMapIcon";
 import { useBirdData } from "../contexts/BirdDataContext";
 import { useEffect, useState } from "react";
 import { BirdModal } from "./modals/BirdModal";
@@ -22,7 +22,9 @@ export function Map() {
     const navigate = useNavigate();
     const location = useLocation();
     const [zoom, setZoom] = useLocalStorage("vogelvortrag-map-zoom", 13);
-    const [markers, setMarkers] = useState<Array<{ lat: number; lng: number; image?: BirdImage; observation: BirdObservation, blurred?: boolean }>>([]);
+    const [markers, setMarkers] = useState<
+        Array<{ lat: number; lng: number; image?: BirdImage; observation: BirdObservation }>
+    >([]);
     const [newObsLocation, setNewObsLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [showObsModal, setShowObsModal] = useState(false);
     const [popupOpenSpeciesId, setPopupOpenSpeciesId] = useState<string | null>(null);
@@ -50,7 +52,13 @@ export function Map() {
 
     useEffect(() => {
         (async () => {
-            const newMarkers: Array<{ lat: number; lng: number; image?: BirdImage; observation: BirdObservation, blurred?: boolean }> = [];
+            const newMarkers: Array<{
+                lat: number;
+                lng: number;
+                image?: BirdImage;
+                observation: BirdObservation;
+                blurred?: boolean;
+            }> = [];
             for (const observation of observations) {
                 let image = observation.image;
                 if (!image) {
@@ -103,33 +111,25 @@ export function Map() {
             {/* handle zoom updates */}
             <MapZoomWatcher setZoom={setZoom} />
 
-            {markers.map((marker, index) => {
-                const hasBeenVisited = visitedMarkers.includes(marker.observation.id);
-                const customIcon = createBirdIcon({
-                    size: 128, // always fixed
-                    image: marker.image,
-                    className: "bird-icon",
-                    visited: hasBeenVisited,
-                    blurredImage: marker.blurred,
-                });
-                return (
-                    <Marker
-                        key={index}
-                        position={{ lat: marker.lat, lng: marker.lng }}
-                        icon={customIcon}
-                        eventHandlers={{
-                            click: () => {
-                                setPopupOpenSpeciesId(marker.observation.speciesId);
-                                setVisitedMarkers((prev) => {
-                                    const newSet = new Set(prev);
-                                    newSet.add(marker.observation.id);
-                                    return Array.from(newSet);
-                                });
-                            },
-                        }}
-                    />
-                );
-            })}
+            {markers.map((marker, index) => (
+                <BirdMarkerIcon
+                    key={index}
+                    position={[marker.lat, marker.lng]}
+                    image={marker.image}
+                    blurredImage={marker.observation.mystery}
+                    audio={marker.observation.recording}
+                    visited={visitedMarkers.includes(marker.observation.id)}
+                    onClick={() => {
+                        setPopupOpenSpeciesId(marker.observation.speciesId);
+                        setVisitedMarkers((prev) => {
+                            if (!prev.includes(marker.observation.id)) {
+                                return [...prev, marker.observation.id];
+                            }
+                            return prev;
+                        });
+                    }}
+                />
+            ))}
 
             <div className="fixed bottom-6 right-2 bg-white flex flex-col items-center p-2 rounded-xl z-1000">
                 {isEditingAllowed && (
@@ -146,7 +146,8 @@ export function Map() {
 
                 <Button
                     onClick={async () => {
-                        confirm(`Möchtest du wirklich alle "Bereits Besucht" Marker zurücksetzen?`) && setVisitedMarkers([]);
+                        confirm(`Möchtest du wirklich alle "Bereits Besucht" Marker zurücksetzen?`) &&
+                            setVisitedMarkers([]);
                     }}
                     variant="subdue"
                     className="mb-2 rounded-xl w-10 h-10"

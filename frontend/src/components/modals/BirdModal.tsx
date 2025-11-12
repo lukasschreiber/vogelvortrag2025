@@ -10,6 +10,7 @@ import PencilIcon from "../../assets/icons/pencil.svg?react";
 import { ObservationEditModal } from "./ObservationEditModal";
 import { Lightbox } from "../Lightbox";
 import TrashIcon from "../../assets/icons/trash.svg?react";
+import { XenoCantoBirdSong } from "../XenoCantoBirdSong";
 
 interface BirdPopupProps {
     species: BirdSpecies;
@@ -88,31 +89,37 @@ export function BirdModal({ species, open, onClose, onUpdate }: BirdPopupProps) 
                                     </Button>
                                     {isEditingAllowed && (
                                         <>
-                                        <Button
-                                            onClick={() => {
-                                                setEditingObservation(obs);
-                                            }}
-                                            variant="primary"
-                                            className="text-xs px-2 py-1"
-                                            icon={<PencilIcon className="w-4 h-4" />}
-                                        >
-                                            Bearbeiten
-                                        </Button>
-                                        <Button 
-                                            onClick={() => {
-                                                if (confirm("Sind Sie sicher, dass Sie diese Beobachtung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.")) {
-                                                    dataSource.deleteBirdObservation(obs.id).then(() => {   
-                                                        setObservations((prev) => prev.filter((o) => o.id !== obs.id));
-                                                        onUpdate?.();
-                                                    });
-                                                }
-                                            }}
-                                            variant="danger"
-                                            className="text-xs px-2 py-1"
-                                            icon={<TrashIcon className="w-4 h-4" />}
-                                        >
-                                            Löschen
-                                        </Button>
+                                            <Button
+                                                onClick={() => {
+                                                    setEditingObservation(obs);
+                                                }}
+                                                variant="primary"
+                                                className="text-xs px-2 py-1"
+                                                icon={<PencilIcon className="w-4 h-4" />}
+                                            >
+                                                Bearbeiten
+                                            </Button>
+                                            <Button
+                                                onClick={() => {
+                                                    if (
+                                                        confirm(
+                                                            "Sind Sie sicher, dass Sie diese Beobachtung löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+                                                        )
+                                                    ) {
+                                                        dataSource.deleteBirdObservation(obs.id).then(() => {
+                                                            setObservations((prev) =>
+                                                                prev.filter((o) => o.id !== obs.id)
+                                                            );
+                                                            onUpdate?.();
+                                                        });
+                                                    }
+                                                }}
+                                                variant="danger"
+                                                className="text-xs px-2 py-1"
+                                                icon={<TrashIcon className="w-4 h-4" />}
+                                            >
+                                                Löschen
+                                            </Button>
                                         </>
                                     )}
                                 </div>
@@ -126,15 +133,24 @@ export function BirdModal({ species, open, onClose, onUpdate }: BirdPopupProps) 
                     <p className="text-yellow-800">Für diese Art wurden noch keine Beobachtungen erfasst.</p>
                 </div>
             )}
+            {(species.recordings?.length ?? 0) > 0 && (
+                <div className=" p-4 bg-gray-100 rounded-lg mb-4">
+                    <h3 className="text-lg font-semibold mb-2">Vogelstimmen</h3>
+                    <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                        {species.recordings?.map((recording, index) => (
+                            <XenoCantoBirdSong key={index} recording={recording} label={species.commonName} />
+                        ))}
+                    </div>
+                </div>
+            )}
             <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                 {species.images.map((image, index) => (
-                    <div key={image.url} className="rounded-md overflow-hidden">
+                    <div key={image.url} className="cursor-pointer w-64! h-64! rounded-md overflow-hidden">
                         <BirdImage
+                            key={image.url}
                             image={image}
                             imageSize={1200}
-                            className="w-full h-32 object-cover rounded-md"
                             onClick={() => {
-                                console.log("Opening lightbox at index", index);
                                 setCurrentIndex(index);
                                 setLightboxOpen(true);
                             }}

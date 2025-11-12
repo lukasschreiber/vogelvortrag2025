@@ -7,10 +7,11 @@ interface XenoCantoBirdSongProps {
     recording: XenoCantoRecording;
     selectable?: boolean;
     isSelected?: boolean;
+    label?: string;
     onSelectChange?: (selected: boolean) => void;
 }
 
-export function XenoCantoBirdSong({ recording, selectable, isSelected, onSelectChange }: XenoCantoBirdSongProps) {
+export function XenoCantoBirdSong({ recording, selectable, label, isSelected, onSelectChange }: XenoCantoBirdSongProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -69,7 +70,7 @@ export function XenoCantoBirdSong({ recording, selectable, isSelected, onSelectC
                     onSelectChange && onSelectChange(!isSelected);
                 }
             }}
-            className={`max-w-xl w-full rounded-lg shadow-sm flex flex-col gap-1 overflow-hidden pb-2 ${selectable ? "cursor-pointer hover:border-blue-500 hover:ring-2 hover:ring-blue-100" : ""} ${selectable && isSelected ? "border-blue-500 border-2 ring-2 ring-blue-100" : "border border-gray-300/30"}`}
+            className={`max-w-xl w-full bg-white rounded-lg shadow-sm flex flex-col gap-1 overflow-hidden pb-2 ${selectable ? "cursor-pointer hover:border-blue-500 hover:ring-2 hover:ring-blue-100" : ""} ${selectable && isSelected ? "border-blue-500 border-2 ring-2 ring-blue-100" : "border border-gray-300/30"}`}
         >
             <div className="relative w-full overflow-hidden h-20">
                 <img
@@ -78,7 +79,7 @@ export function XenoCantoBirdSong({ recording, selectable, isSelected, onSelectC
                     className="w-full transform origin-left h-full sono"
                     style={{
                         transform: `scaleX(${getScaleFactor(recording.length)})`,
-                        filter: "brightness(0.95)",
+                        filter: "brightness(0.85)",
                     }}
                 />
                 <div
@@ -107,7 +108,7 @@ export function XenoCantoBirdSong({ recording, selectable, isSelected, onSelectC
                         {isPlaying ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
                     </Button>
                     <div>
-                        <h2 className="text-md font-semibold">{recording.en}</h2>
+                        <h2 className="text-md font-semibold">{label ?? recording.en}</h2>
                         <div className="text-xs text-gray-500">
                             {recording.rec}, XC{recording.id}, Aufrufbar unter{" "}
                             <a
@@ -130,7 +131,7 @@ export function XenoCantoBirdSong({ recording, selectable, isSelected, onSelectC
     );
 }
 
-function fixLink(link: string) {
+export function fixLink(link: string) {
     if (link.startsWith("https://")) {
         return link;
     }

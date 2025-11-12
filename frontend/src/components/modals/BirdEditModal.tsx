@@ -163,7 +163,11 @@ export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "
 
                 <BirdSongSelector
                     species={form}
-                    onBirdSongsChange={() => {} /** setForm((prev) => ({ ...prev, birdSongs: songs }) ) */}
+                    onBirdSongsChange={(recordings) => {
+                        setForm((prev) => ({ ...prev, recordings }));
+                    }}
+                    selectedSongs={form.recordings || []}
+                    maxSelectable={2}
                 />
             </div>
         </Modal>

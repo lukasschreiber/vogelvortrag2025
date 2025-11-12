@@ -74,6 +74,7 @@ class BirdSpecies(BaseModel):
     family: str
     conservationStatus: Optional[ConservationStatus] = None
     images: List[BirdImage] = Field(default_factory=list)
+    recordings: List[XenoCantoRecording] = Field(default_factory=list)
 
 
 class BirdObservation(BaseModel):
@@ -85,6 +86,9 @@ class BirdObservation(BaseModel):
     title: str
     notes: Optional[str] = None
     image: Optional[BirdImage] = None
+    recording: Optional[XenoCantoRecording] = None
+    mystery: bool = False
+    includeAudioInMarker: bool = True
 
     @field_validator("date")
     @classmethod
@@ -104,10 +108,61 @@ class BirdObservation(BaseModel):
 class Count(BaseModel):
     count: int
 
-
 class SpeciesList(RootModel[List[BirdSpecies]]):
     root: List[BirdSpecies]
 
 
 class ObservationList(RootModel[List[BirdObservation]]):
     root: List[BirdObservation]
+
+class XenoCantoSono(BaseModel):
+    small: Optional[str] = None
+    med: Optional[str] = None
+    large: Optional[str] = None
+    full: Optional[str] = None
+
+
+class XenoCantoOsci(BaseModel):
+    small: Optional[str] = None
+    med: Optional[str] = None
+    large: Optional[str] = None
+
+
+class XenoCantoRecording(BaseModel):
+    id: str
+    gen: Optional[str] = None
+    sp: Optional[str] = None
+    ssp: Optional[str] = None
+    grp: Optional[str] = None
+    en: Optional[str] = None
+    rec: Optional[str] = None
+    cnt: Optional[str] = None
+    loc: Optional[str] = None
+    lat: Optional[str] = None
+    lon: Optional[str] = None
+    alt: Optional[str] = None
+    type: Optional[str] = None
+    sex: Optional[str] = None
+    stage: Optional[str] = None
+    method: Optional[str] = None
+    url: Optional[str] = None
+    file: Optional[str] = None
+    file_name: Optional[str] = Field(None, alias="file-name")
+    sono: Optional[XenoCantoSono] = None
+    osci: Optional[XenoCantoOsci] = None
+    lic: Optional[str] = None
+    q: Optional[str] = None
+    length: Optional[str] = None
+    time: Optional[str] = None
+    date: Optional[str] = None
+    uploaded: Optional[str] = None
+    also: List[str] = Field(default_factory=list)
+    rmk: Optional[str] = None
+    animal_seen: Optional[str] = Field(None, alias="animal-seen")
+    playback_used: Optional[str] = Field(None, alias="playback-used")
+    temp: Optional[str] = None
+    regnr: Optional[str] = None
+    auto: Optional[str] = None
+    dvc: Optional[str] = None
+    mic: Optional[str] = None
+    smp: Optional[str] = None

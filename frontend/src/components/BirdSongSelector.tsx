@@ -1,17 +1,19 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { BirdSpecies } from "../data/types";
 import { XenoCantoBirdSong, type XenoCantoApiResponse, type XenoCantoRecording } from "./XenoCantoBirdSong";
 import { Input } from "./Input";
 import { Select } from "./Select";
 
-interface BirdSongSelecterProps {
+interface BirdSongSelectorProps {
     species: BirdSpecies;
     area?: string;
     quality?: "A" | "B" | "C" | "D";
-    onBirdSongsChange?: (songs: string[]) => void;
+    onBirdSongsChange?: (songs: XenoCantoRecording[]) => void;
+    selectedSongs?: XenoCantoRecording[];
+    maxSelectable?: number;
 }
 
-export function BirdSongSelector({ species, area, quality = "A" }: BirdSongSelecterProps) {
+export function BirdSongSelector({ species, area, maxSelectable, onBirdSongsChange, selectedSongs, quality = "A" }: BirdSongSelectorProps) {
     const [availableRecordings, setAvailableRecordings] = useState<XenoCantoRecording[]>([]);
     const [showResultsNumber, setShowResultsNumber] = useState<number>(4);
     const [country, setCountry] = useState<string | undefined>(undefined);
@@ -20,7 +22,7 @@ export function BirdSongSelector({ species, area, quality = "A" }: BirdSongSelec
     >(undefined);
     const [maxLength, setMaxLength] = useState<number | undefined>(undefined);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [selectedRecordings, setSelectedRecordings] = useState<string[]>([]);
+    const [selectedRecordings, setSelectedRecordings] = useState<XenoCantoRecording[]>(selectedSongs || []);
 
     const url = useMemo(() => {
         const queryParts: string[] = [];
@@ -54,9 +56,12 @@ export function BirdSongSelector({ species, area, quality = "A" }: BirdSongSelec
 
     return (
         <div className="pt-2 mt-4">
-            <label className="block text-md font-semibold text-gray-700 mb-2">
+            <label className="block text-md font-semibold text-gray-700">
                 Vogelgesänge auswählen (von Xeno Canto)
             </label>
+            <div className="mb-2 text-xs text-gray-500">
+                Maximal {maxSelectable ? maxSelectable : "beliebig viele"} Vogelgesänge auswählbar.
+            </div>
 
             <div className="flex flex-row gap-2 p-1 px-2 bg-gray-100 rounded-lg mb-2">
                 <Input
@@ -108,14 +113,20 @@ export function BirdSongSelector({ species, area, quality = "A" }: BirdSongSelec
                                     .slice(0, Math.min(showResultsNumber, availableRecordings.length))
                                     .map((recording) => (
                                         <XenoCantoBirdSong key={recording.id} recording={recording} selectable
-                                            isSelected={selectedRecordings.includes(recording.id)}
+                                            isSelected={selectedRecordings.find((r) => r.id === recording.id) !== undefined}
                                             onSelectChange={(selected) => {
                                                 setSelectedRecordings((prev) => {
                                                     if (selected) {
-                                                        const newSelection = [...prev, recording.id];
+                                                        const newSelection = [...prev, recording];
+                                                        if (newSelection.length > (maxSelectable || Infinity)) {
+                                                            onBirdSongsChange?.(prev);
+                                                            return prev;
+                                                        }
+                                                        onBirdSongsChange?.(newSelection);
                                                         return newSelection;
                                                     } else {
-                                                        const newSelection = prev.filter((id) => id !== recording.id);
+                                                        const newSelection = prev.filter((r) => r.id !== recording.id);
+                                                        onBirdSongsChange?.(newSelection);
                                                         return newSelection;
                                                     }
                                                 });
@@ -128,7 +139,7 @@ export function BirdSongSelector({ species, area, quality = "A" }: BirdSongSelec
                                     className="mt-2 text-blue-500 underline cursor-pointer text-xs"
                                     onClick={() => setShowResultsNumber((prev) => prev + 4)}
                                 >
-                                    Mehr Anzeigen...
+                                    Weitere Vogelstimmen Anzeigen...
                                 </button>
                             )}
                         </>

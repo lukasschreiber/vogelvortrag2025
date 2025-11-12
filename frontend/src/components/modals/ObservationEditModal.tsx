@@ -7,6 +7,8 @@ import { Input } from "../Input";
 import { Textarea } from "../Textarea";
 import { ImageUploader } from "../ImageUploader"; // ✅ Reuse our new component
 import { Select } from "../Select";
+import { BirdSongSelector } from "../BirdSongSelector";
+import { Checkbox } from "../Checkbox";
 
 interface ObservationEditModalProps {
     open: boolean;
@@ -35,6 +37,8 @@ export function ObservationEditModal({
         observer: "",
         title: "",
         notes: "",
+        mystery: false,
+        includeAudioInMarker: false,
     });
 
     // ✅ Fetch bird species
@@ -57,6 +61,9 @@ export function ObservationEditModal({
                 title: initialData.title || "",
                 notes: initialData.notes || "",
                 image: initialData.image,
+                recording: initialData.recording,
+                mystery: initialData.mystery || false,
+                includeAudioInMarker: initialData.includeAudioInMarker || false,
             });
         } else {
             setForm({
@@ -67,6 +74,8 @@ export function ObservationEditModal({
                 observer: "",
                 title: "",
                 notes: "",
+                mystery: false,
+                includeAudioInMarker: false,
             });
         }
     }, [initialData, open, editMode]);
@@ -163,15 +172,34 @@ export function ObservationEditModal({
                     />
                 </div>
 
-                {/* Notes */}
+                <div className="grid grid-cols-2 gap-2">
+                    <Checkbox 
+                        label="Bild auf Karte verpixeln"
+                        checked={form.mystery}
+                        onChange={(e) => setForm((prev) => ({ ...prev, mystery: e.target.checked }))}
+                    />
+                    <Checkbox 
+                        label="Audio im Marker einbinden"
+                        disabled={!form.recording}
+                        checked={form.includeAudioInMarker}
+                        onChange={(e) => setForm((prev) => ({ ...prev, includeAudioInMarker: e.target.checked }))}
+                    />
+                </div>
+
                 <Textarea label="Notizen" name="notes" rows={4} value={form.notes || ""} onChange={handleChange} />
 
-                {/* ✅ Single image uploader */}
                 <ImageUploader
                     label="Beobachtungs Bild(er)"
                     images={form.image ? [form.image] : []}
                     onImagesChange={(imgs) => setForm((prev) => ({ ...prev, image: imgs[0] }))}
                     maxImages={1}
+                />
+
+                <BirdSongSelector
+                    species={speciesList.find((s) => s.id === form.speciesId) || ({} as BirdSpecies)}
+                    onBirdSongsChange={(song) => setForm((prev) => ({ ...prev, recording: song.length > 0 ? song[0] : undefined }))}
+                    maxSelectable={1}
+                    selectedSongs={form.recording ? [form.recording] : []}
                 />
             </div>
         </Modal>

@@ -1,3 +1,5 @@
+import type { XenoCantoRecording } from "../components/XenoCantoBirdSong";
+
 export interface BirdSpecies {
     id: string;
     commonName: string;
@@ -5,6 +7,7 @@ export interface BirdSpecies {
     family: string;
     conservationStatus?: "LC" | "NT" | "VU" | "EN" | "CR" | "EW" | "EX";
     images: BirdImage[];
+    recordings?: XenoCantoRecording[];
 }
 
 export interface BirdImage {
@@ -39,4 +42,7 @@ export interface BirdObservation {
     notes?: string;
     title: string;
     image?: BirdImage;
+    recording?: XenoCantoRecording;
+    mystery: boolean; // whether the observation is marked as "mystery"
+    includeAudioInMarker: boolean; // whether to include audio playback in map marker
 }

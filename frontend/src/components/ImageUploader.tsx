@@ -73,7 +73,10 @@ export function ImageUploader({
 
     return (
         <div className="pt-2 mt-4">
-            <label className="block text-md font-semibold text-gray-700 mb-2">{label}</label>
+            <label className="block text-md font-semibold text-gray-700">{label}</label>
+            <div className="mb-2 text-xs text-gray-500">
+                Maximal {maxImages} Bild{maxImages > 1 ? "er" : ""} hochladen.
+            </div>
 
             <div className="flex flex-wrap gap-3">
                 {images.map((img, i) => (
