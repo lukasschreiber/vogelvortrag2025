@@ -6,6 +6,7 @@ import { Input } from "../Input";
 import { Button } from "../Button";
 import { ImageUploader } from "../ImageUploader";
 import { useBirdData } from "../../contexts/BirdDataContext";
+import { BirdSongSelector } from "../BirdSongSelector";
 
 interface BirdModalProps {
     open: boolean;
@@ -106,8 +107,14 @@ export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "
                     onChange={handleChange}
                 />
 
-                <Input name="commonName" required label="Deutscher Name" value={form.commonName} onChange={handleChange} />
-                
+                <Input
+                    name="commonName"
+                    required
+                    label="Deutscher Name"
+                    value={form.commonName}
+                    onChange={handleChange}
+                />
+
                 {editMode === "add" &&
                     allSpecies.some((s) => s.commonName.toLowerCase() === form.commonName.toLowerCase()) && (
                         <p className="text-sm text-red-500">Eine Art mit dem gleichen Namen existiert bereits.</p>
@@ -123,7 +130,9 @@ export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "
 
                 {editMode === "add" &&
                     allSpecies.some((s) => s.scientificName.toLowerCase() === form.scientificName.toLowerCase()) && (
-                        <p className="text-sm text-red-500">Eine Art mit dem gleichen wissenschaftlichen Namen existiert bereits.</p>
+                        <p className="text-sm text-red-500">
+                            Eine Art mit dem gleichen wissenschaftlichen Namen existiert bereits.
+                        </p>
                     )}
 
                 <Input name="family" label="Familie" value={form.family} onChange={handleChange} />
@@ -150,6 +159,11 @@ export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "
                     images={form.images}
                     onImagesChange={(imgs) => setForm((prev) => ({ ...prev, images: imgs }))}
                     maxImages={10}
+                />
+
+                <BirdSongSelector
+                    species={form}
+                    onBirdSongsChange={() => {} /** setForm((prev) => ({ ...prev, birdSongs: songs }) ) */}
                 />
             </div>
         </Modal>

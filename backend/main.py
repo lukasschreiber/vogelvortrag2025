@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional
 
+from functools import lru_cache
 from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Request, Response, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
@@ -15,14 +16,16 @@ import uuid
 import io
 from PIL import Image
 import hashlib
+from contextlib import asynccontextmanager
 
 from models import (
     BirdObservation,
     BirdSpecies,
     ObservationList,
     SpeciesList,
-    Count,
 )
+from io import BytesIO
+import requests
 from dotenv import load_dotenv
 from storage import JsonRepository
 import os
@@ -37,7 +40,55 @@ if os.getenv("ENV", "development") == "development":
 
 # --- App & CORS ---------------------------------------------------------------
 
-app = FastAPI(title="Vogelvortrag API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("🚀 Starting up Vogelvortrag API...")
+    updated = 0
+
+    def get_dimensions(image_url: str) -> tuple[int | None, int | None]:
+        """Try to read image dimensions from local or remote source."""
+        if image_url.startswith("http"):
+            try:
+                resp = requests.get(image_url, stream=True, timeout=5)
+                resp.raise_for_status()
+                img = Image.open(BytesIO(resp.content))
+                return img.width, img.height
+            except Exception as e:
+                print(f"⚠️ Remote image failed ({image_url[:50]}...): {e}")
+                return (None, None)
+        else:
+            # Assume local path like /uploads/foo.jpg
+            filename = Path(image_url).name
+            return get_image_size(filename)
+
+    try:
+        species_list = repo.list_species()
+        for species in species_list:
+            changed = False
+            for img in species.images:
+                if not getattr(img, "width", None) or not getattr(img, "height", None):
+                    w, h = get_dimensions(img.url)
+                    if w and h:
+                        img.width = w
+                        img.height = h
+                        changed = True
+                        updated += 1
+            if changed:
+                repo.upsert_species(species)
+
+        if updated:
+            print(f"✅ Backfilled width/height for {updated} image(s)")
+        else:
+            print("ℹ️ All images already had width/height.")
+    except Exception as e:
+        print(f"⚠️ Error while backfilling image sizes: {e}")
+
+    # Yield control to FastAPI (this replaces startup event)
+    yield
+
+    print("👋 Shutting down Vogelvortrag API...")
+
+app = FastAPI(title="Vogelvortrag API", version="1.0.0", lifespan=lifespan)
 
 UPLOAD_DIR = Path("uploads")
 DATA_DIR = Path("data")
@@ -100,20 +151,6 @@ def health() -> dict[str, str]:
 def list_species() -> SpeciesList:
     return SpeciesList(repo.list_species())
 
-
-@app.get("/species/count", response_model=Count)
-def species_count() -> Count:
-    return Count(count=repo.species_count())
-
-
-@app.get("/species/{species_id}", response_model=BirdSpecies)
-def get_species(species_id: str) -> BirdSpecies:
-    s = repo.get_species(species_id)
-    if not s:
-        raise HTTPException(status_code=404, detail="Species not found")
-    return s
-
-
 @app.put("/species/{species_id}", response_model=BirdSpecies)
 def put_species(species_id: str, payload: BirdSpecies) -> BirdSpecies:
     if payload.id != species_id:
@@ -132,14 +169,6 @@ def delete_species(species_id: str) -> None:
         raise HTTPException(status_code=404, detail="Species not found")
 
 
-@app.get("/species/{species_id}/has-observations", response_model=bool)
-def species_has_observations(species_id: str) -> bool:
-    return repo.species_has_observations(species_id)
-
-
-# --- Observation endpoints ----------------------------------------------------
-
-
 @app.get("/observations", response_model=ObservationList)
 def list_observations(
     speciesId: Optional[str] = Query(default=None),
@@ -156,19 +185,6 @@ def list_observations(
         offset=offset,
     )
     return ObservationList(obs)
-
-
-@app.get("/observations/count", response_model=Count)
-def observation_count() -> Count:
-    return Count(count=repo.observation_count())
-
-
-@app.get("/observations/{observation_id}", response_model=BirdObservation)
-def get_observation(observation_id: str) -> BirdObservation:
-    o = repo.get_observation(observation_id)
-    if not o:
-        raise HTTPException(status_code=404, detail="Observation not found")
-    return o
 
 
 @app.put("/observations/{observation_id}", response_model=BirdObservation)
@@ -198,24 +214,30 @@ def delete_observation(observation_id: str) -> None:
 async def upload_image(file: UploadFile = File(...)):
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file uploaded")
-    
-    # Validate file type
+
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Only image uploads are allowed")
 
-    # Generate unique filename (preserving extension)
     ext = Path(file.filename).suffix
     unique_name = f"{uuid.uuid4().hex}{ext}"
     file_path = UPLOAD_DIR / unique_name
 
-    # Save file to disk
     with file_path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # Return a BirdImage-compatible object
+    # Read dimensions
+    try:
+        with Image.open(file_path) as img:
+            width, height = img.size
+    except Exception as e:
+        print(f"⚠️ Could not read dimensions for {file.filename}: {e}")
+        width = height = 0  # always numeric
+
     return {
         "url": f"/uploads/{unique_name}",
         "description": f"Uploaded {file.filename}",
+        "width": width,
+        "height": height,
     }
     
 @app.get("/image/{filename}")
@@ -285,3 +307,15 @@ async def serve_image(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image processing failed: {e}")
+    
+    
+@lru_cache(maxsize=1024)
+def get_image_size(filename: str) -> tuple[int | None, int | None]:
+    path = UPLOAD_DIR / filename
+    if not path.exists():
+        return (None, None)
+    try:
+        with Image.open(path) as img:
+            return img.width, img.height
+    except Exception:
+        return (None, None)

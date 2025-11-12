@@ -23,6 +23,8 @@ export interface BirdImage {
         /** Vertical offset, in normalized coordinates (-1 = up, 1 = down) */
         offsetY?: number;
     };
+    width?: number;
+    height?: number;
 }
 
 export interface BirdObservation {

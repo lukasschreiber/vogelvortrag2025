@@ -52,6 +52,8 @@ class BirdImage(BaseModel):
     license: Optional[str] = None
     description: Optional[str] = None
     fit: Optional[FitSettings] = None
+    width: Optional[int] = None
+    height: Optional[int] = None
     
     @field_validator("url")
     @classmethod

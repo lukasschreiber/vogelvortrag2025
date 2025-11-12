@@ -1,12 +1,10 @@
 import { useState, type DragEvent } from "react";
-import type { BirdImage } from "./../data/types";
+import type { BirdImage } from "../data/types";
 import { BirdImage as BirdImageComp } from "./BirdImage";
 import TrashIcon from "../assets/icons/trash.svg?react";
-import PlusIcon from "./../assets/icons/plus.svg?react";
-import { Input } from "./Input";
-import { Textarea } from "./Textarea";
-import { Button } from "./Button";
+import PlusIcon from "../assets/icons/plus.svg?react";
 import { useBirdData } from "../contexts/BirdDataContext";
+import { ImageEditor } from "./ImageEditor";
 
 interface ImageUploaderProps {
     images: BirdImage[];
@@ -54,58 +52,28 @@ export function ImageUploader({
         if (expandedIndex === index) setExpandedIndex(null);
     }
 
-    function handleImageChange(index: number, field: keyof BirdImage, value: string) {
-        const updated = [...images];
-        updated[index] = { ...updated[index], [field]: value };
-        onImagesChange(updated);
-    }
-
-    function handleFitChange(index: number, key: "scale" | "offsetX" | "offsetY" | "reset", value: number | null) {
-        const updated = [...images];
-        const fit = { scale: 1, offsetX: 0, offsetY: 0, ...updated[index].fit };
-
-        if (key === "reset") {
-            updated[index].fit = { scale: 1, offsetX: 0, offsetY: 0 };
-        } else {
-            const newFit = { ...fit, [key]: value ?? fit[key] };
-            newFit.scale = Math.max(0.5, Math.min(2, newFit.scale));
-
-            const maxOffset = (newFit.scale - 1) / newFit.scale;
-            newFit.offsetX = Math.max(-maxOffset, Math.min(maxOffset, newFit.offsetX));
-            newFit.offsetY = Math.max(-maxOffset, Math.min(maxOffset, newFit.offsetY));
-
-            updated[index].fit = newFit;
-        }
-
-        onImagesChange(updated);
-    }
-
     // ---- Drag & Drop Handlers ----
     function handleDragOver(e: DragEvent<HTMLLabelElement>) {
         e.preventDefault();
-        e.stopPropagation();
         setIsDragging(true);
     }
 
     function handleDragLeave(e: DragEvent<HTMLLabelElement>) {
         e.preventDefault();
-        e.stopPropagation();
         setIsDragging(false);
     }
 
     function handleDrop(e: DragEvent<HTMLLabelElement>) {
         e.preventDefault();
-        e.stopPropagation();
         setIsDragging(false);
 
         const files = Array.from(e.dataTransfer.files).filter((file) => file.type.startsWith("image/"));
-
         files.forEach((file) => handleAddImage(file));
     }
 
     return (
         <div className="pt-2 mt-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
+            <label className="block text-md font-semibold text-gray-700 mb-2">{label}</label>
 
             <div className="flex flex-wrap gap-3">
                 {images.map((img, i) => (
@@ -154,92 +122,14 @@ export function ImageUploader({
                 )}
             </div>
 
-            {/* Expanded editor */}
             {expandedIndex !== null && images[expandedIndex] && (
-                <div className="mt-6 bg-gray-100 shadow-md rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-sm font-semibold text-gray-800">
-                            Bearbeitungsansicht Bild {expandedIndex + 1}
-                        </h3>
-                        <button
-                            className="text-xs text-gray-500 hover:text-gray-700"
-                            onClick={() => setExpandedIndex(null)}
-                        >
-                            Schließen
-                        </button>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Input
-                            label="Autor"
-                            placeholder="Author"
-                            value={images[expandedIndex].author || ""}
-                            onChange={(e) => handleImageChange(expandedIndex, "author", e.target.value)}
-                        />
-                        <Input
-                            label="Lizenz"
-                            placeholder="License"
-                            value={images[expandedIndex].license || ""}
-                            onChange={(e) => handleImageChange(expandedIndex, "license", e.target.value)}
-                        />
-                        <Textarea
-                            label="Beschreibung"
-                            placeholder="Description"
-                            rows={2}
-                            value={images[expandedIndex].description || ""}
-                            onChange={(e) => handleImageChange(expandedIndex, "description", e.target.value)}
-                        />
-                    </div>
-
-                    <div className="mt-2 pt-4">
-                        <div className="flex flex-col md:flex-row gap-6">
-                            <div className="relative shrink-0 w-full md:w-80 aspect-square border rounded-xl overflow-hidden bg-gray-100 shadow-inner">
-                                <BirdImageComp image={images[expandedIndex]} hideAttribution imageSize={800} />
-                                <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none">
-                                    {Array.from({ length: 9 }).map((_, i) => (
-                                        <div key={i} className="border border-white/30" />
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col grow gap-4">
-                                {(["scale", "offsetX", "offsetY"] as const).map((key) => (
-                                    <div key={key}>
-                                        <label className="flex items-center justify-between text-sm font-medium text-gray-700">
-                                            <span>
-                                                {key === "scale" ? "Zoom" : key === "offsetX" ? "Offset X" : "Offset Y"}
-                                            </span>
-                                            <span className="text-gray-500">
-                                                {(
-                                                    images[expandedIndex].fit?.[key] ?? (key === "scale" ? 1 : 0)
-                                                ).toFixed(2)}
-                                            </span>
-                                        </label>
-                                        <input
-                                            type="range"
-                                            min={key === "scale" ? 0.5 : -1}
-                                            max={key === "scale" ? 2 : 1}
-                                            step="0.01"
-                                            value={images[expandedIndex].fit?.[key] ?? (key === "scale" ? 1 : 0)}
-                                            onChange={(e) =>
-                                                handleFitChange(expandedIndex, key, parseFloat(e.target.value))
-                                            }
-                                            className="w-full accent-blue-500"
-                                        />
-                                    </div>
-                                ))}
-
-                                <Button
-                                    onClick={() => handleFitChange(expandedIndex, "reset", null)}
-                                    variant="subdue"
-                                    className="self-start mt-2"
-                                >
-                                    Bearbeitungen Zurücksetzen
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <ImageEditor
+                    image={images[expandedIndex]}
+                    index={expandedIndex}
+                    onClose={() => setExpandedIndex(null)}
+                    onImagesChange={onImagesChange}
+                    images={images}
+                />
             )}
         </div>
     );

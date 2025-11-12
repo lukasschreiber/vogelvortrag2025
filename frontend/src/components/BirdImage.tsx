@@ -18,8 +18,11 @@ export function BirdImage({ image, hideAttribution, doNotFit, imageSize, ...prop
                 src={`${image.url.startsWith("http") ? image.url : `${import.meta.env.VITE_BACKEND_URL}${image.url}`.replace("uploads", "image")}?${imageSize ? `h=${imageSize}` : ""}`}
                 alt={image.description}
                 {...props}
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
                 style={{
                     ...props.style,
+                    overflow: "visible",
                     objectPosition: "center",
                     objectFit: "cover",
                     width: "100%",

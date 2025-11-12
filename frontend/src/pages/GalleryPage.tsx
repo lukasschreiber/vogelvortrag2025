@@ -38,7 +38,7 @@ export function GalleryPage() {
                     setSpecies(newSpecies);
                 }}
             />
-            <div className="fixed bottom-2 right-2 bg-white flex flex-col items-center p-2 rounded-xl">
+            <div className="fixed bottom-2 right-2 bg-white flex flex-col items-center p-2 rounded-xl z-999">
                 {isEditingAllowed && (
                     <Button onClick={() => setIsModalOpen(true)} className="mb-2 rounded-xl w-10 h-10">
                         <PlusIcon className="w-6 h-6" />
