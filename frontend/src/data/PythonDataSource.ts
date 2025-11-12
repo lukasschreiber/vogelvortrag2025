@@ -10,6 +10,7 @@ export class PythonDataSource extends DataSource {
     constructor(baseUrl: string) {
         super();
         this.baseUrl = baseUrl.replace(/\/+$/, ""); // remove trailing slash
+        console.log(`PythonDataSource initialized with baseUrl: ${this.baseUrl}`);
     }
 
     /**

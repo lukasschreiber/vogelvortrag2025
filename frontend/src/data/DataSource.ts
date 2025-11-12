@@ -4,40 +4,65 @@ export abstract class DataSource {
     private speciesCache: BirdSpecies[] | null = null;
     private observationsCache: BirdObservation[] | null = null;
 
-    // Abstract methods — must be implemented by subclasses
+    // NEW: track in-flight fetches
+    private speciesPromise: Promise<BirdSpecies[]> | null = null;
+    private observationsPromise: Promise<BirdObservation[]> | null = null;
+
     protected abstract fetchBirdSpecies(): Promise<BirdSpecies[]>;
     protected abstract fetchBirdObservations(): Promise<BirdObservation[]>;
 
     async invalidateSpeciesCache(): Promise<void> {
+        console.log("Invalidating species cache");
         this.speciesCache = null;
+        this.speciesPromise = null; // reset in-flight
     }
 
     async invalidateObservationsCache(): Promise<void> {
+        console.log("Invalidating observations cache");
         this.observationsCache = null;
+        this.observationsPromise = null; // reset in-flight
     }
 
-    // Cached getter for species
     async getBirdSpecies(): Promise<BirdSpecies[]> {
         if (this.speciesCache) {
             return this.speciesCache;
         }
-        this.speciesCache = await this.fetchBirdSpecies();
-        return this.speciesCache;
+
+        if (!this.speciesPromise) {
+            this.speciesPromise = this.fetchBirdSpecies()
+                .then((data) => {
+                    this.speciesCache = data;
+                    this.speciesPromise = null; // clear after resolution
+                    return data;
+                })
+                .catch((err) => {
+                    this.speciesPromise = null;
+                    throw err;
+                });
+        }
+
+        return this.speciesPromise;
     }
 
-    // Cached getter for observations
     async getBirdObservations(): Promise<BirdObservation[]> {
         if (this.observationsCache) {
             return this.observationsCache;
         }
-        this.observationsCache = await this.fetchBirdObservations();
-        return this.observationsCache;
-    }
 
-    // Optional manual cache reset
-    clearCache(): void {
-        this.speciesCache = null;
-        this.observationsCache = null;
+        if (!this.observationsPromise) {
+            this.observationsPromise = this.fetchBirdObservations()
+                .then((data) => {
+                    this.observationsCache = data;
+                    this.observationsPromise = null;
+                    return data;
+                })
+                .catch((err) => {
+                    this.observationsPromise = null;
+                    throw err;
+                });
+        }
+
+        return this.observationsPromise;
     }
 
     async getBirdSpeciesById(id: string): Promise<BirdSpecies | null> {

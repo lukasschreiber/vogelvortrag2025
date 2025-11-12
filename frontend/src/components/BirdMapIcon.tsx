@@ -69,25 +69,6 @@ export function BirdMarkerIcon({
                     }}
                     onClick={(e) => {
                         e.stopPropagation();
-
-                        // If there's audio, only fire onClick if clicking near the border (not center)
-                        if (audio) {
-                            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                            const radius = rect.width / 2;
-                            const borderThickness = Math.round(size * 0.06);
-                            const centerX = rect.left + radius;
-                            const centerY = rect.top + radius;
-                            const dx = e.clientX - centerX;
-                            const dy = e.clientY - centerY;
-                            const distance = Math.sqrt(dx * dx + dy * dy);
-
-                            // inside the image but not in border
-                            if (distance < radius - borderThickness * 1.5) {
-                                // clicked in center → do nothing (reserved for audio)
-                                return;
-                            }
-                        }
-
                         onClick?.();
                     }}
                 >
@@ -110,18 +91,20 @@ export function BirdMarkerIcon({
 
                     {/* Audio overlay */}
                     {audio && (
-                        <div
-                            className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/60 transition-colors cursor-pointer"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                const el = document.getElementById(audioId) as HTMLAudioElement;
-                                if (!el) return;
-                                if (el.paused) el.play();
-                                else el.pause();
-                            }}
-                        >
-                            <PlayIcon className="w-6 h-6 text-white pointer-events-none play-icon" />
-                            <PauseIcon className="w-6 h-6 text-white pointer-events-none pause-icon hidden" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/60 transition-colors">
+                            <div
+                                className="w-6 h-6 cursor-pointer hover:scale-110 transform transition-transform"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const el = document.getElementById(audioId) as HTMLAudioElement;
+                                    if (!el) return;
+                                    if (el.paused) el.play();
+                                    else el.pause();
+                                }}
+                            >
+                                <PlayIcon className="w-6 h-6 text-white pointer-events-none play-icon" />
+                                <PauseIcon className="w-6 h-6 text-white pointer-events-none pause-icon hidden" />
+                            </div>
                         </div>
                     )}
                 </div>

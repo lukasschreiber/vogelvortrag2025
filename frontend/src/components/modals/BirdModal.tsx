@@ -52,15 +52,14 @@ export function BirdModal({ species, open, onClose, onUpdate }: BirdPopupProps) 
                             <div key={index} className="p-2 bg-white border border-green-100 rounded-md mb-2 relative">
                                 <div className="flex flex-row gap-2">
                                     {obs.image ? (
-                                        <div>
+                                        <div className="w-20! h-20! rounded-md mr-1 shrink-0 overflow-hidden flex items-center justify-center">
                                             <BirdImage
                                                 image={obs.image}
                                                 imageSize={200}
-                                                className="w-20! h-20! object-cover rounded-md mr-4 shrink-0"
                                             />
                                         </div>
                                     ) : (
-                                        <div className="w-20! h-20! bg-gray-200/40 rounded-md mr-4 shrink-0 flex items-center justify-center">
+                                        <div className="w-20! h-20! bg-gray-200/40 rounded-md mr-1 shrink-0 flex items-center justify-center">
                                             <span className="text-gray-500 text-sm">Kein Bild</span>
                                         </div>
                                     )}

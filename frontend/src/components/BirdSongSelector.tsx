@@ -8,8 +8,8 @@ interface BirdSongSelectorProps {
     species: BirdSpecies;
     area?: string;
     quality?: "A" | "B" | "C" | "D";
-    onBirdSongsChange?: (songs: XenoCantoRecording[]) => void;
-    selectedSongs?: XenoCantoRecording[];
+    onBirdSongsChange: (songs: XenoCantoRecording[]) => void;
+    selectedSongs: XenoCantoRecording[];
     maxSelectable?: number;
 }
 
@@ -22,7 +22,6 @@ export function BirdSongSelector({ species, area, maxSelectable, onBirdSongsChan
     >(undefined);
     const [maxLength, setMaxLength] = useState<number | undefined>(undefined);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [selectedRecordings, setSelectedRecordings] = useState<XenoCantoRecording[]>(selectedSongs || []);
 
     const url = useMemo(() => {
         const queryParts: string[] = [];
@@ -60,7 +59,7 @@ export function BirdSongSelector({ species, area, maxSelectable, onBirdSongsChan
                 Vogelgesänge auswählen (von Xeno Canto)
             </label>
             <div className="mb-2 text-xs text-gray-500">
-                Maximal {maxSelectable ? maxSelectable : "beliebig viele"} Vogelgesänge auswählbar.
+                Maximal {maxSelectable ? maxSelectable : "beliebig viele"} Vogelgesänge auswählbar ({selectedSongs.length} ausgewählt)
             </div>
 
             <div className="flex flex-row gap-2 p-1 px-2 bg-gray-100 rounded-lg mb-2">
@@ -113,23 +112,24 @@ export function BirdSongSelector({ species, area, maxSelectable, onBirdSongsChan
                                     .slice(0, Math.min(showResultsNumber, availableRecordings.length))
                                     .map((recording) => (
                                         <XenoCantoBirdSong key={recording.id} recording={recording} selectable
-                                            isSelected={selectedRecordings.find((r) => r.id === recording.id) !== undefined}
+                                            isSelected={selectedSongs.find((r) => r.id === recording.id) !== undefined}
                                             onSelectChange={(selected) => {
-                                                setSelectedRecordings((prev) => {
-                                                    if (selected) {
-                                                        const newSelection = [...prev, recording];
-                                                        if (newSelection.length > (maxSelectable || Infinity)) {
-                                                            onBirdSongsChange?.(prev);
-                                                            return prev;
-                                                        }
-                                                        onBirdSongsChange?.(newSelection);
-                                                        return newSelection;
+                                                let newSelectedSongs: XenoCantoRecording[] = [];
+                                                if (selected) {
+                                                    // Add song
+                                                    if (
+                                                        !maxSelectable ||
+                                                        selectedSongs.length < maxSelectable
+                                                    ) {
+                                                        newSelectedSongs = [...selectedSongs, recording];
                                                     } else {
-                                                        const newSelection = prev.filter((r) => r.id !== recording.id);
-                                                        onBirdSongsChange?.(newSelection);
-                                                        return newSelection;
+                                                        newSelectedSongs = [...selectedSongs];
                                                     }
-                                                });
+                                                } else {
+                                                    // Remove song
+                                                    newSelectedSongs = selectedSongs.filter((r) => r.id !== recording.id);
+                                                }
+                                                onBirdSongsChange(newSelectedSongs);
                                             }}
                                         />
                                     ))}

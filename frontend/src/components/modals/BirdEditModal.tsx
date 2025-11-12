@@ -46,6 +46,7 @@ export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "
                 family: initialData.family || "",
                 conservationStatus: initialData.conservationStatus || "LC",
                 images: initialData.images || [],
+                recordings: initialData.recordings || [],
             });
         } else {
             setForm({
@@ -55,6 +56,7 @@ export function BirdEditModal({ open, onClose, initialData, onSave, editMode = "
                 family: "",
                 conservationStatus: "LC",
                 images: [],
+                recordings: [],
             });
         }
     }, [initialData, open, editMode]);
