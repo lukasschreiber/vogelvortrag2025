@@ -1,5 +1,5 @@
 import L from "leaflet";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Marker } from "react-leaflet";
 import { createRoot } from "react-dom/client";
 import { BirdImage as BirdImageComp } from "./BirdImage";
