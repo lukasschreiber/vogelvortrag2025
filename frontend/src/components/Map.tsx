@@ -11,18 +11,18 @@ import GridIcon from "../assets/icons/grid.svg?react";
 import XMarkIcon from "../assets/icons/xmark.svg?react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { useLocation, useNavigate } from "react-router";
-import type { BirdObservation } from "../data/types";
+import type { BirdImage, BirdObservation } from "../data/types";
 import { QRCodeButton } from "./QRCodeButton";
 import RefreshIcon from "../assets/icons/refresh.svg?react";
 
 export function Map() {
     const { dataSource, isEditingAllowed, stopEditing } = useBirdData();
-    const [visitedMarkers, setVisitedMarkers] = useLocalStorage<Set<string>>("vogelvortrag-visited-markers", new Set());
+    const [visitedMarkers, setVisitedMarkers] = useLocalStorage<Array<string>>("vogelvortrag-visited-markers", []);
     const [observations, setObservations] = useState<BirdObservation[]>([]);
     const navigate = useNavigate();
     const location = useLocation();
     const [zoom, setZoom] = useLocalStorage("vogelvortrag-map-zoom", 13);
-    const [markers, setMarkers] = useState<Array<{ lat: number; lng: number; image: any; observation: any }>>([]);
+    const [markers, setMarkers] = useState<Array<{ lat: number; lng: number; image?: BirdImage; observation: BirdObservation, blurred?: boolean }>>([]);
     const [newObsLocation, setNewObsLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [showObsModal, setShowObsModal] = useState(false);
     const [popupOpenSpeciesId, setPopupOpenSpeciesId] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export function Map() {
 
     useEffect(() => {
         (async () => {
-            const newMarkers: Array<{ lat: number; lng: number; image: any; observation: any }> = [];
+            const newMarkers: Array<{ lat: number; lng: number; image?: BirdImage; observation: BirdObservation, blurred?: boolean }> = [];
             for (const observation of observations) {
                 let image = observation.image;
                 if (!image) {
@@ -62,6 +62,7 @@ export function Map() {
                     lng: observation.location.longitude,
                     observation,
                     image,
+                    blurred: true,
                 });
             }
             setMarkers(newMarkers);
@@ -103,11 +104,13 @@ export function Map() {
             <MapZoomWatcher setZoom={setZoom} />
 
             {markers.map((marker, index) => {
+                const hasBeenVisited = visitedMarkers.includes(marker.observation.id);
                 const customIcon = createBirdIcon({
                     size: 128, // always fixed
                     image: marker.image,
                     className: "bird-icon",
-                    visited: visitedMarkers.has(marker.observation.id),
+                    visited: hasBeenVisited,
+                    blurredImage: marker.blurred,
                 });
                 return (
                     <Marker
@@ -120,7 +123,7 @@ export function Map() {
                                 setVisitedMarkers((prev) => {
                                     const newSet = new Set(prev);
                                     newSet.add(marker.observation.id);
-                                    return newSet;
+                                    return Array.from(newSet);
                                 });
                             },
                         }}
@@ -143,7 +146,7 @@ export function Map() {
 
                 <Button
                     onClick={async () => {
-                        confirm(`Möchtest du wirklich alle "Bereits Besucht" Marker zurücksetzen?`) && setVisitedMarkers(new Set());
+                        confirm(`Möchtest du wirklich alle "Bereits Besucht" Marker zurücksetzen?`) && setVisitedMarkers([]);
                     }}
                     variant="subdue"
                     className="mb-2 rounded-xl w-10 h-10"

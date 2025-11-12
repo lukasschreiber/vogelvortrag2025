@@ -10,6 +10,7 @@ interface BirdIconOptions {
     borderColor?: string;
     className?: string;
     visited?: boolean;
+    blurredImage?: boolean;
 }
 
 export function createBirdIcon({
@@ -17,6 +18,7 @@ export function createBirdIcon({
     image,
     className,
     visited,
+    blurredImage,
     borderColor = "white",
 }: BirdIconOptions): L.DivIcon {
     // Pointer triangle dimensions relative to size
@@ -45,7 +47,7 @@ export function createBirdIcon({
                     </div>
                 )}
                 <div
-                    className="relative rounded-full overflow-hidden shadow-md"
+                    className="relative rounded-full overflow-hidden shadow-md bg-white"
                     style={{
                         width: `${size}px`,
                         height: `${size}px`,
@@ -53,7 +55,13 @@ export function createBirdIcon({
                     }}
                 >
                     {image ? (
-                        <BirdImageComp image={image} className="w-full h-full" imageSize={400} hideAttribution />
+                        <BirdImageComp
+                            image={image}
+                            className="w-full h-full"
+                            imageSize={400}
+                            hideAttribution
+                            style={{ filter: blurredImage ? "blur(8px)" : "none" }}
+                        />
                     ) : (
                         fallback
                     )}
