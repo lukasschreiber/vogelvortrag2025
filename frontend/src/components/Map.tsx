@@ -11,14 +11,20 @@ import GridIcon from "../assets/icons/grid.svg?react";
 import XMarkIcon from "../assets/icons/xmark.svg?react";
 import useLocalStorage from "../hooks/useLocalStorage";
 import { useLocation, useNavigate } from "react-router";
-import type { BirdImage, BirdObservation } from "../data/types";
+import type { BirdImage, BirdObservation, BirdSpecies } from "../data/types";
 import { QRCodeButton } from "./QRCodeButton";
 import RefreshIcon from "../assets/icons/refresh.svg?react";
+import CollapsibleButtonGroup from "./ButtonGroup";
+import SettingsIcon from "../assets/icons/settings.svg?react";
+import { SettingsModal } from "./modals/SettingsModal";
+import { Lightbox } from "./Lightbox";
+import { useSettings } from "../hooks/useSettings";
 
 export function Map() {
     const { dataSource, isEditingAllowed, stopEditing } = useBirdData();
     const [visitedMarkers, setVisitedMarkers] = useLocalStorage<Array<string>>("vogelvortrag-visited-markers", []);
     const [observations, setObservations] = useState<BirdObservation[]>([]);
+    const [lightBoxOpenObservation, setLightboxOpenObservation] = useState<BirdObservation | null>(null);
     const navigate = useNavigate();
     const location = useLocation();
     const [zoom, setZoom] = useLocalStorage("vogelvortrag-map-zoom", 13);
@@ -28,13 +34,24 @@ export function Map() {
     const [newObsLocation, setNewObsLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [showObsModal, setShowObsModal] = useState(false);
     const [popupOpenSpeciesId, setPopupOpenSpeciesId] = useState<string | null>(null);
-    const [popupSpecies, setPopupSpecies] = useState<any>(null);
+    const [popupSpecies, setPopupSpecies] = useState<BirdSpecies | null>(null);
+    const [lightboxSpecies, setLightboxSpecies] = useState<BirdSpecies | null>(null);
+    const [settingsOpen, setSettingsOpen] = useState(false);
+    const { settings } = useSettings();
 
     function handleAddObservation(lat: number, lng: number) {
         if (!isEditingAllowed) return;
         setNewObsLocation({ lat, lng });
         setShowObsModal(true);
     }
+
+    useEffect(() => {
+        if (lightBoxOpenObservation) {
+            dataSource.getBirdSpeciesById(lightBoxOpenObservation.speciesId).then((species) => {
+                setLightboxSpecies(species);
+            });
+        }
+    }, [lightboxSpecies, lightBoxOpenObservation, dataSource]);
 
     useEffect(() => {
         if (popupOpenSpeciesId) {
@@ -77,23 +94,6 @@ export function Map() {
         })();
     }, [observations, dataSource]);
 
-    useEffect(() => {
-        const minZoom = 5;
-        const maxZoom = 15;
-
-        // Normalize zoom into 0–1 range
-        const t = Math.min(1, Math.max(0, (zoom - minZoom) / (maxZoom - minZoom)));
-
-        // The less the zoom, the smaller the scale, scale from 1.0x to 0.1x
-        const scale = t * 0.9;
-
-        // Apply CSS transform to all bird icons
-        document.querySelectorAll<HTMLImageElement>(".bird-icon").forEach((el) => {
-            el.style.transform = `scale(${scale})`;
-            el.style.transformOrigin = "bottom center";
-        });
-    }, [zoom]);
-
     return (
         <MapContainer
             center={{ lat: 49.87196, lng: 8.65276 }}
@@ -111,27 +111,42 @@ export function Map() {
             {/* handle zoom updates */}
             <MapZoomWatcher setZoom={setZoom} />
 
-            {markers.map((marker, index) => (
-                <BirdMarkerIcon
-                    key={index}
-                    position={[marker.lat, marker.lng]}
-                    image={marker.image}
-                    blurredImage={marker.observation.mystery}
-                    audio={marker.observation.recording}
-                    visited={visitedMarkers.includes(marker.observation.id)}
-                    onClick={() => {
-                        setPopupOpenSpeciesId(marker.observation.speciesId);
-                        setVisitedMarkers((prev) => {
-                            if (!prev.includes(marker.observation.id)) {
-                                return [...prev, marker.observation.id];
-                            }
-                            return prev;
-                        });
-                    }}
-                />
-            ))}
+            {markers.map((marker, index) => {
+                const MIN_ZOOM = 3;
+                const MAX_ZOOM = 18;
+                const MIN_SIZE = 4;
+                const MAX_SIZE = 128;
 
-            <div className="fixed bottom-6 right-2 bg-white flex flex-col items-center p-2 rounded-xl z-1000">
+                // Normalize zoom to a 0–1 range
+                const normalized = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
+
+                // Smooth linear interpolation
+                const size = MIN_SIZE + normalized * (MAX_SIZE - MIN_SIZE);
+
+                return (
+                    <BirdMarkerIcon
+                        key={index}
+                        size={size}
+                        position={[marker.lat, marker.lng]}
+                        image={marker.image}
+                        blurredImage={marker.observation.mystery}
+                        audio={marker.observation.recording}
+                        visited={visitedMarkers.includes(marker.observation.id)}
+                        onClick={() => {
+                            if (settings.fullscreenGalleryMapBehavior === "directly") {
+                                setLightboxOpenObservation(marker.observation);
+                            } else {
+                                setPopupOpenSpeciesId(marker.observation.speciesId);
+                            }
+                            setVisitedMarkers((prev) =>
+                                prev.includes(marker.observation.id) ? prev : [...prev, marker.observation.id]
+                            );
+                        }}
+                    />
+                );
+            })}
+
+            <CollapsibleButtonGroup>
                 {isEditingAllowed && (
                     <Button
                         onClick={() => {
@@ -146,6 +161,7 @@ export function Map() {
 
                 <Button
                     onClick={async () => {
+                        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                         confirm(`Möchtest du wirklich alle "Bereits Besucht" Marker zurücksetzen?`) &&
                             setVisitedMarkers([]);
                     }}
@@ -153,6 +169,10 @@ export function Map() {
                     className="mb-2 rounded-xl w-10 h-10"
                 >
                     <RefreshIcon className="w-6 h-6" />
+                </Button>
+
+                <Button onClick={() => setSettingsOpen(true)} variant="subdue" className="mb-2 rounded-xl w-10 h-10">
+                    <SettingsIcon className="w-6 h-6" />
                 </Button>
 
                 <QRCodeButton />
@@ -166,7 +186,7 @@ export function Map() {
                 </Button>
 
                 <MapZoomButtons setZoom={setZoom} zoom={zoom} />
-            </div>
+            </CollapsibleButtonGroup>
 
             <MapEventHandler onDoubleClick={handleAddObservation} />
 
@@ -207,6 +227,24 @@ export function Map() {
                     }}
                 />
             )}
+
+            <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+            <Lightbox
+                images={
+                    lightBoxOpenObservation
+                        ? lightBoxOpenObservation.image && settings.includeObservationImagesInGallery
+                            ? [lightBoxOpenObservation.image, ...(lightboxSpecies?.images ?? [])]
+                            : (lightboxSpecies?.images ?? [])
+                        : []
+                }
+                open={!!lightBoxOpenObservation}
+                initialIndex={0}
+                onClose={() => {
+                    setLightboxSpecies(null);
+                    setLightboxOpenObservation(null);
+                }}
+            />
         </MapContainer>
     );
 }

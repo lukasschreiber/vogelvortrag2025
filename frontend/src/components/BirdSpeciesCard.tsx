@@ -1,5 +1,5 @@
-import { useState, useRef, useLayoutEffect, useEffect } from "react";
-import type { BirdSpecies } from "../data/types";
+import { useState, useRef, useLayoutEffect, useEffect, useCallback } from "react";
+import type { BirdObservation, BirdSpecies } from "../data/types";
 import { BirdImage } from "./BirdImage";
 import BinocularIcon from "../assets/icons/binoculars.svg?react";
 import PencilButton from "../assets/icons/pencil.svg?react";
@@ -9,23 +9,36 @@ import { BirdEditModal } from "./modals/BirdEditModal";
 import { BirdModal } from "./modals/BirdModal";
 import { useBirdData } from "../contexts/BirdDataContext";
 import { Button } from "./Button";
+import { useSettings } from "../hooks/useSettings";
+import { Lightbox } from "./Lightbox";
 
 interface BirdSpeciesCardProps {
     species: BirdSpecies;
     hasObservations?: boolean;
+    observations?: BirdObservation[];
     onUpdate?: () => void;
 }
 
 export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: BirdSpeciesCardProps) {
     const { dataSource, isEditingAllowed } = useBirdData();
+    const { settings } = useSettings();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [popupOpen, setPopupOpen] = useState(false);
     const [isSmall, setIsSmall] = useState(false);
     const [showButtons, setShowButtons] = useState(false);
     const [hoverSupported, setHoverSupported] = useState(true);
+    const [lightboxOpen, setLightboxOpen] = useState(false);
 
     const cardRef = useRef<HTMLDivElement>(null);
+
+    const handleOpenModal = useCallback(() => {
+        if (settings.fullscreenGalleryGalleryBehavior === "directly" && species.images.length > 0) {
+            setLightboxOpen(true);
+        } else {
+            setPopupOpen(true);
+        }
+    }, [settings.fullscreenGalleryGalleryBehavior, species.images.length]);
 
     useLayoutEffect(() => {
         const el = cardRef.current;
@@ -66,12 +79,12 @@ export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: 
             ref={cardRef}
             style={{ containerType: "inline-size" }}
             className={`group relative rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden ${
-                hasObservations ? "outline-4 outline-offset-2 outline-blue-500" : "outline-none"
+                hasObservations && settings.showBorders ? "outline-4 outline-offset-2 outline-blue-500" : "outline-none"
             }`}
             onTouchStart={handleTouchToggle}
         >
             {/* Observation badge */}
-            {hasObservations && (
+            {hasObservations && settings.showObservedTag && (
                 <div className="absolute text-white bg-blue-500 text-xs px-2 py-1 rounded-xl top-2 right-2 z-10 flex items-center gap-1">
                     <BinocularIcon className="w-5 h-5" />
                     <span>Beobachtet</span>
@@ -81,15 +94,17 @@ export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: 
             {/* Image / Fallback */}
             {species.images[0] ? (
                 <div
-                    onClick={() => canOpenModal && setPopupOpen(true)}
+                    onClick={() => canOpenModal && handleOpenModal()}
                     className={canOpenModal ? "cursor-pointer" : "cursor-default"}
                 >
-                    <div
-                        className={`absolute z-10 left-2 top-2 font-semibold text-white/80 drop-shadow-md
+                    {settings.showBirdNames && (
+                        <div
+                            className={`absolute z-10 left-2 top-2 font-semibold text-white/80 drop-shadow-md
                                     text-2xl @md:text-4xl @lg:text-4xl transition-all duration-300 ${isSmall ? "text-lg" : ""}`}
-                    >
-                        {species.commonName}
-                    </div>
+                        >
+                            {species.commonName}
+                        </div>
+                    )}
                     <BirdImage
                         image={species.images[0]}
                         imageSize={800}
@@ -101,7 +116,7 @@ export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: 
             ) : (
                 <div
                     className="w-full h-full bg-[#b0afa4] flex items-center justify-center aspect-square"
-                    onClick={() => canOpenModal && setPopupOpen(true)}
+                    onClick={() => canOpenModal && handleOpenModal()}
                 >
                     <span
                         className={`text-white/70 font-semibold transition-all duration-300 ${
@@ -184,6 +199,13 @@ export function BirdSpeciesCard({ species, hasObservations = false, onUpdate }: 
             />
 
             <BirdModal species={species} open={popupOpen} onClose={() => setPopupOpen(false)} />
+
+            <Lightbox
+                images={species.images}
+                open={lightboxOpen}
+                initialIndex={0}
+                onClose={() => setLightboxOpen(false)}
+            />
         </div>
     );
 }

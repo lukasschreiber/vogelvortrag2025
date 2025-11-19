@@ -2,6 +2,7 @@ import { Outlet } from "react-router";
 import { BirdDataProvider } from "./contexts/BirdDataContext";
 import { PythonDataSource } from "./data/PythonDataSource";
 import { useMemo } from "react";
+import { SettingsProvider } from "./contexts/SettingsContext";
 
 export function RootLayout() {
     const dataSource = useMemo(() => {
@@ -9,8 +10,10 @@ export function RootLayout() {
     }, []);
 
     return (
-        <BirdDataProvider dataSource={dataSource}>
-            <Outlet />
-        </BirdDataProvider>
+        <SettingsProvider>
+            <BirdDataProvider dataSource={dataSource}>
+                <Outlet />
+            </BirdDataProvider>
+        </SettingsProvider>
     );
 }

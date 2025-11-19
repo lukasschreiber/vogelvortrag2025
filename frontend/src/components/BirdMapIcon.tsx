@@ -8,6 +8,7 @@ import PlayIcon from "../assets/icons/play.svg?react";
 import PauseIcon from "../assets/icons/pause.svg?react";
 import type { BirdImage } from "../data/types";
 import { fixLink, type XenoCantoRecording } from "./XenoCantoBirdSong";
+import { useSettings } from "../hooks/useSettings";
 
 interface BirdMarkerIconProps {
     position: L.LatLngExpression;
@@ -39,6 +40,7 @@ export function BirdMarkerIcon({
     const pointerWidth = Math.round(size * 0.15);
     const pointerHeight = Math.round(size * 0.2);
     const translateY = -(size / 32);
+    const { settings } = useSettings();
 
     // The icon is built once and memoized for performance.
     const icon = useMemo(() => {
@@ -52,9 +54,19 @@ export function BirdMarkerIcon({
                 // stopPropagation to keep Leaflet click clean
                 onClick={(e) => e.stopPropagation()}
             >
-                {visited && (
-                    <div className="absolute top-1 right-1 bg-green-500 rounded-full w-8 h-8 flex items-center justify-center shadow-md z-50 text-white">
-                        <CheckIcon className="w-5 h-5" />
+                {visited && settings.showMapVisitedMarkers && (
+                    <div className="absolute bg-green-500 rounded-full flex items-center justify-center shadow-md z-50 text-white"
+                        style={{
+                            width: `${Math.round(size * 0.35)}px`,
+                            height: `${Math.round(size * 0.35)}px`,
+                            top: `-0px`,
+                            right: `-0px`,
+                        }}
+                    >
+                        <CheckIcon style={{
+                            width: `${Math.round(size * 0.25)}px`,
+                            height: `${Math.round(size * 0.25)}px`,
+                        }} />
                     </div>
                 )}
 

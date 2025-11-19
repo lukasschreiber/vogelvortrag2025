@@ -29,6 +29,7 @@ export function BirdGallery({ species, imagesPerRow, onUpdate }: BirdGalleryProp
                 <BirdSpeciesCard
                     key={bird.id}
                     species={bird}
+                    observations={observationsMap[bird.id] ? undefined : []}
                     hasObservations={observationsMap[bird.id] ?? false}
                     onUpdate={() => {
                         onUpdate?.();

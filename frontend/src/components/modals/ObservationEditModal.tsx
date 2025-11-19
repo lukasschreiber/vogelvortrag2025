@@ -175,14 +175,14 @@ export function ObservationEditModal({
                 <div className="grid grid-cols-2 gap-2">
                     <Checkbox 
                         label="Bild auf Karte verpixeln"
-                        checked={form.mystery}
-                        onChange={(e) => setForm((prev) => ({ ...prev, mystery: e.target.checked }))}
+                        value={form.mystery}
+                        onChange={(v) => setForm((prev) => ({ ...prev, mystery: v }))}
                     />
                     <Checkbox 
                         label="Audio im Marker einbinden"
                         disabled={!form.recording}
-                        checked={form.includeAudioInMarker}
-                        onChange={(e) => setForm((prev) => ({ ...prev, includeAudioInMarker: e.target.checked }))}
+                        value={form.includeAudioInMarker}
+                        onChange={(v) => setForm((prev) => ({ ...prev, includeAudioInMarker: v }))}
                     />
                 </div>
 
