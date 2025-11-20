@@ -55,7 +55,8 @@ export function BirdMarkerIcon({
                 onClick={(e) => e.stopPropagation()}
             >
                 {visited && settings.showMapVisitedMarkers && (
-                    <div className="absolute bg-green-500 rounded-full flex items-center justify-center shadow-md z-50 text-white"
+                    <div
+                        className="absolute bg-green-500 rounded-full flex items-center justify-center shadow-md z-50 text-white"
                         style={{
                             width: `${Math.round(size * 0.35)}px`,
                             height: `${Math.round(size * 0.35)}px`,
@@ -63,10 +64,12 @@ export function BirdMarkerIcon({
                             right: `-0px`,
                         }}
                     >
-                        <CheckIcon style={{
-                            width: `${Math.round(size * 0.25)}px`,
-                            height: `${Math.round(size * 0.25)}px`,
-                        }} />
+                        <CheckIcon
+                            style={{
+                                width: `${Math.round(size * 0.25)}px`,
+                                height: `${Math.round(size * 0.25)}px`,
+                            }}
+                        />
                     </div>
                 )}
 
@@ -172,5 +175,14 @@ export function BirdMarkerIcon({
         return icon;
     }, [image, blurredImage, visited, borderColor, className, audio, onClick]);
 
-    return <Marker position={position} icon={icon} />;
+    return (
+        <Marker
+            position={position}
+            icon={icon}
+            eventHandlers={{
+                mouseover: (e) => e.target.setZIndexOffset(1000),
+                mouseout: (e) => e.target.setZIndexOffset(0),
+            }}
+        />
+    );
 }
