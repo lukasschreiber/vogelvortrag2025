@@ -4,12 +4,13 @@ import { Navigation, Pagination, Keyboard } from "swiper/modules";
 import { BirdImage as BirdImageComp } from "./BirdImage";
 import XMarkIcon from "../assets/icons/xmark.svg?react";
 
-// @ts-ignore
+// @ts-expect-error Does not have types
 import "swiper/css";
-// @ts-ignore
+// @ts-expect-error Does not have types
 import "swiper/css/navigation";
-// @ts-ignore
+// @ts-expect-error Does not have types
 import "swiper/css/pagination";
+
 import { createPortal } from "react-dom";
 import type { BirdImage } from "../data/types";
 

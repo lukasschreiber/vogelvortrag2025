@@ -122,9 +122,37 @@ export function ImageEditor({ image, index, images, onImagesChange, onClose }: I
             </div>
 
             <div className="space-y-2">
-                <Input label="Autor" placeholder="Author" value={image.author || ""} />
-                <Input label="Lizenz" placeholder="License" value={image.license || ""} />
-                <Textarea label="Beschreibung" placeholder="Description" rows={2} value={image.description || ""} />
+                <Input
+                    label="Autor"
+                    placeholder="Author"
+                    value={image.author || ""}
+                    onChange={(e) => {
+                        const updated = [...images];
+                        updated[index] = { ...updated[index], author: e.target.value };
+                        onImagesChange(updated);
+                    }}
+                />
+                <Input
+                    label="Lizenz"
+                    placeholder="Lizenz"
+                    value={image.license || ""}
+                    onChange={(e) => {
+                        const updated = [...images];
+                        updated[index] = { ...updated[index], license: e.target.value };
+                        onImagesChange(updated);
+                    }}
+                />
+                <Textarea
+                    label="Beschreibung"
+                    placeholder="Description"
+                    rows={2}
+                    value={image.description || ""}
+                    onChange={(e) => {
+                        const updated = [...images];
+                        updated[index] = { ...updated[index], description: e.target.value };
+                        onImagesChange(updated);
+                    }}
+                />
             </div>
 
             <div className="mt-2 pt-4">
@@ -164,7 +192,8 @@ export function ImageEditor({ image, index, images, onImagesChange, onClose }: I
                         </Button>
 
                         <p className="text-xs text-gray-400">
-                            Ziehen zum Verschieben · Mausrad zum Zoomen · Keine Weißränder 🎉 {image.width} x {image.height}
+                            Ziehen zum Verschieben · Mausrad zum Zoomen · Keine Weißränder 🎉 {image.width} x{" "}
+                            {image.height}
                         </p>
                     </div>
                 </div>
