@@ -174,7 +174,7 @@ def list_observations(
     speciesId: Optional[str] = Query(default=None),
     dateFrom: Optional[str] = Query(default=None, description="ISO 8601 inclusive"),
     dateTo: Optional[str] = Query(default=None, description="ISO 8601 exclusive"),
-    limit: Optional[int] = Query(default=100, ge=1, le=1000),
+    limit: Optional[int] = Query(default=500, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
 ) -> ObservationList:
     obs = repo.list_observations(
