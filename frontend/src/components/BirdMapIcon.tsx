@@ -170,7 +170,7 @@ export function BirdMarkerIcon({
         });
 
         return icon;
-    }, [size, image, blurredImage, visited, borderColor, className, audio, onClick]);
+    }, [image, blurredImage, visited, borderColor, className, audio, onClick]);
 
     return <Marker position={position} icon={icon} />;
 }

@@ -240,69 +240,75 @@ async def upload_image(file: UploadFile = File(...)):
         "height": height,
     }
     
+from fastapi.responses import Response, RedirectResponse, FileResponse
+
 @app.get("/image/{filename}")
 async def serve_image(
     filename: str,
     w: Optional[int] = Query(default=None, ge=1, le=4096),
     h: Optional[int] = Query(default=None, ge=1, le=4096),
-    q: int = Query(default=85, ge=10, le=100, description="JPEG/WEBP quality"),
-    fmt: Optional[str] = Query(default=None, description="Force output format: jpg, webp, png"),
+    q: int = Query(default=85, ge=10, le=100),
+    fmt: Optional[str] = Query(default=None),
 ):
     file_path = UPLOAD_DIR / filename
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Image not found")
 
-    # If no resize params → redirect to static version
+    # If no resize → serve static image (also strongly cached)
     if not w and not h and not fmt:
-        return RedirectResponse(url=f"/uploads/{filename}")
+        return RedirectResponse(
+            url=f"/uploads/{filename}",
+            headers={"Cache-Control": "public, max-age=31536000, immutable"},
+        )
 
     try:
-        # --- Build cache key ---------------------------------------------------
-        # Create a unique hash from filename + parameters
-        key_data = f"{filename}|w={w}|h={h}|q={q}|fmt={fmt}"
-        cache_hash = hashlib.sha1(key_data.encode()).hexdigest()[:16]
+        # ---- Build cache hash
+        key = f"{filename}|w={w}|h={h}|q={q}|fmt={fmt}"
+        cache_hash = hashlib.sha1(key.encode()).hexdigest()[:16]
         ext = (fmt or Path(filename).suffix.lstrip(".") or "jpg").lower()
         cache_file = CACHE_DIR / f"{cache_hash}.{ext}"
 
-        # --- Serve cached file if exists --------------------------------------
+        media_type = f"image/{ext if ext != 'jpg' else 'jpeg'}"
+
+        # ---- Serve cached file if exists
         if cache_file.exists():
-            return Response(
-                content=cache_file.read_bytes(),
-                media_type=f"image/{ext if ext != 'jpg' else 'jpeg'}",
+            return FileResponse(
+                cache_file,
+                media_type=media_type,
+                headers={"Cache-Control": "public, max-age=31536000, immutable"},
             )
 
-        # --- Resize + save to cache -------------------------------------------
+        # ---- Process image
         with Image.open(file_path) as img:
             orig_w, orig_h = img.size
 
-            # Preserve aspect ratio if only one dimension provided
+            # preserve aspect ratio logic
             if w and not h:
                 h = int(orig_h * (w / orig_w))
             elif h and not w:
                 w = int(orig_w * (h / orig_h))
-            elif not w and not h:
-                w, h = orig_w, orig_h
+            else:
+                w = w or orig_w
+                h = h or orig_h
 
             img = img.resize((w, h), Image.Resampling.LANCZOS)
-
             fmt_final = (fmt or img.format or "JPEG").upper()
             if fmt_final == "JPG":
                 fmt_final = "JPEG"
 
             buf = io.BytesIO()
             if fmt_final in ("JPEG", "WEBP"):
-                img.save(buf, format=fmt_final, quality=q, optimize=True)
+                img.save(buf, fmt_final, quality=q, optimize=True)
             else:
-                img.save(buf, format=fmt_final)
+                img.save(buf, fmt_final)
             buf.seek(0)
 
-            # Save to cache
-            with cache_file.open("wb") as f:
-                f.write(buf.getvalue())
+            cache_file.write_bytes(buf.getvalue())
 
             return Response(
                 content=buf.getvalue(),
-                media_type=f"image/{fmt_final.lower()}"
+                media_type=media_type,
+                headers={"Cache-Control": "public, max-age=31536000, immutable"},
             )
 
     except Exception as e:
